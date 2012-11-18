@@ -7,6 +7,8 @@
 <blockquote><i>This is a comma by convention in most countries, but you may wish to change to ';' or some other character.  Please use caution!  This setting should always be the same for export and import!</i></blockquote></p>
 <p>Enclosure: <input name="enclosure" type="text" length="1" value="<?php echo htmlentities($enclosure); ?>"/><br/>
 <blockquote><i>This character will be used to further define each field.  If your delimiter is a comma, but it appears between two enclosure characters, it will be ignored, thereby allowing you to use it.  Please use caution!  This setting should always be the same for export and import!</i></blockquote></p>
+<p>CSV Path: <input name="csv_path" type="text" value="<?php echo $csv_path; ?>"/><br/>
+<blockquote><i>This is where your WP CSV files will be stored.  Must be writable.  <strong>Must not be publicly accessible. Iow, you can't use '<?php echo $_SERVER['DOCUMENT_ROOT']; ?>' or any sub-folders of it.</strong></i></blockquote></p>
 <p>Date format: <select name="date_format"><option <?php if ($date_format == 'US' ) echo 'selected';?> value="US">US (MM/DD/YYYY)</option><option <?php if ($date_format == 'English' ) echo 'selected';?> value="English">English (DD/MM/YYYY)</option></select><br/>
 <blockquote><i>Dates are exported as 'YYYY-MM-DD HH:MM:SS' but your spreadsheet will change them automatically.  Please specify the format dates will be in when you re-import a CSV file.</i></blockquote></p>
 <p>Encoding: <select name="encoding">
