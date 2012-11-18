@@ -15,7 +15,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			$posts_table = $wpdb->prefix . 'posts';
 			$postmeta_table = $wpdb->prefix . 'postmeta';
 			$post_fields = implode( ", ", $this->post_fields );
-			$sql = $wpdb->prepare( "SELECT DISTINCT $post_fields FROM $posts_table WHERE post_status in ('publish','future', 'private') ORDER BY post_modified DESC" );
+			$sql = $wpdb->prepare( "SELECT DISTINCT $post_fields FROM $posts_table WHERE post_status in ('publish','future', 'private') AND post_type NOT IN ( 'nav_menu_item' ) ORDER BY post_modified DESC" );
 
 			$posts = $wpdb->get_results( $sql );
 

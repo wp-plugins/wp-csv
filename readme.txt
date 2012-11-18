@@ -4,13 +4,13 @@ Donate link: http://paulswebsolutions.com
 Tags: csv, import, export, bulk, easy, good
 Requires at least: 3.3
 Tested up to: 3.4.2
-Stable tag: 1.0
+Stable tag: 1.1
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types.
 
 == Description ==
 
-Bulk create or modify posts, pages, or custom post types created by other plugins.  Supports custom fields, images, tags, and complex category hierarchies.  Straight forward interface that gets the job done instead of baffles you with 300 options you don't need.
+Bulk create or modify posts, pages, or custom post types created by other plugins.  Supports custom fields, images, tags, and complex category hierarchies.  Straight forward interface that gets the job done.
 
 == Installation ==
 
@@ -30,6 +30,9 @@ No screenshots available.
 
 = 1.0 =
 * Initial upload
+= 1.1 =
+* Made csv file path configurable
 
 == Upgrade Notice ==
 
+The server path where CSV files are stored, is now configurable.

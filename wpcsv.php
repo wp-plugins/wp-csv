@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://paulswebsolutions.com/wpcsv-csv-import
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.0
+Version: 1.1
 Author: Paul's Web Solutions
 Author URI: http://www.paulswebsolutions.com
 
@@ -53,18 +53,17 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			$backup_url = '';
 
 			$settings = array( 
+				'version' => '1.1',
 				'delimiter' => ',',
 				'enclosure' => '"',
 				'date_format' => 'US',
 				'encoding' => 'UTF-8',
-				'version' => '1.0'
+				'csv_path' => sys_get_temp_dir( )
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-
-			$this->settings['version'] = $settings['version'];
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
@@ -101,6 +100,12 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				}
 				$this->settings['date_format'] = $_POST['date_format'];
 				$this->settings['encoding'] = $_POST['encoding'];
+				if ( $this->csv_path_valid( $_POST['csv_path'] ) ) {
+					$this->settings['csv_path'] = $_POST['csv_path'];
+				} else {
+					$_POST['action'] = 'settings';
+					$error = "ERROR - CSV Path does not exist, is not writable, or was publicly accessible (insecure)!";
+				}
 				$this->settings['delimiter'] = substr( stripslashes( $_POST['delimiter'] ), 0, 1 );
 				$this->settings['enclosure'] = substr( stripslashes( $_POST['enclosure'] ), 0, 1 );
 
@@ -122,7 +127,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 					$this->view->page( 'report', $options );
 					break;
 				case 'export':
-					$options = array_merge( array( 'export_link' => $this->getExportLink( $subdir, $filename ) ), $this->settings );
+					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename ) ), $this->settings );
 					$this->view->page( 'export', $options );
 					break;
 				default:
@@ -147,12 +152,12 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			return $this->wpcsv->import( $rows );
 		}
 
-		function getExportLink( $subdir, $filename ) {
+		function getExportLink( $filename ) {
 			$csv_data = $this->wpcsv->export( );
 			// Intercept 'ID' field and change to 'id' to prevent an excel bug.  Must reverse when importing too.
 			if ( $csv_data[0][0] == 'ID' ) { $csv_data[0][0] = 'id'; }
 
-			if ( $this->csv->saveToFile( $csv_data, $filename, sys_get_temp_dir( ) ) ) {
+			if ( $this->csv->saveToFile( $csv_data, $filename, $this->settings['csv_path'] ) ) {
 				$plugin_dir = basename( dirname( __FILE__ ) );
 				$enc = $this->settings['encoding'];
 				$url = WP_PLUGIN_URL . "/$plugin_dir/download.php?file=$filename.csv&enc=$enc";
@@ -161,6 +166,20 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				$url = FALSE;
 			}
 			return $url;
+		}
+
+		private function csv_path_valid( $path ) {
+			# Make sure the folder exists, is accessible to the web server, and not accessible to the public
+
+			if ( !is_dir( $path ) ) return FALSE;
+
+			if ( !is_writable( $path ) ) return FALSE;
+
+			$web_root = addcslashes( $_SERVER['DOCUMENT_ROOT'], '/' );
+
+			if ( preg_match( '/' . $web_root . '/', $path ) ) return FALSE;
+
+			return TRUE;
 		}
 
 	}
