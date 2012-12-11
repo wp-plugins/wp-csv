@@ -1,26 +1,24 @@
 === WP CSV ===
-Contributors: paulswebsolutions
-Donate link: http://paulswebsolutions.com
-Tags: csv, import, export, bulk, easy, good
+Contributors: cpkwebsolutions
+Donate link: http://cpkwebsolutions.com/donate
+Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.3
 Tested up to: 3.4.2
-Stable tag: 1.1
+Stable tag: 1.2
 
-A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types.
+A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types.  Tags, Categories, Images, and Custom Fields are fully supported also.
 
 == Description ==
 
-Bulk create or modify posts, pages, or custom post types created by other plugins.  Supports custom fields, images, tags, and complex category hierarchies.  Straight forward interface that gets the job done.
+Learn more about the plugin <a href='http://cpkwebsolutions.com/wp-csv'>here</a>.
 
 == Installation ==
 
-1. Either use the built-in plugin installer, or download the zip and extract to your 'wp-content/plugins' folder.
-2. Activate the plugin in Plugins > Installed Plugins
-3. Navigate to Tools > WP CSV in your main dashboard menu
+Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick Start Guide</a>.
 
 == Frequently Asked Questions ==
 
-No FAQs yet.
+<a href='http://cpkwebsolutions.com/wp-csv/faq'>Frequently Asked Questions</a> are stored on our main website.
 
 == Screenshots ==
 
@@ -32,7 +30,10 @@ No screenshots available.
 * Initial upload
 = 1.1 =
 * Made csv file path configurable
+= 1.2 =
+* Fixed: minor incompatibility with PHP 5.4
+* Fixed: small improvement to the download mechanism
 
 == Upgrade Notice ==
 
-The server path where CSV files are stored, is now configurable.
+Minor changes, but highly recommend upgrade.

@@ -1,9 +1,9 @@
 <?php
-
+session_start( );
 if ( isset( $_GET['file'] ) ) {
 	extract( $_GET );
 	$file = strtolower( $file );
-	$path = sys_get_temp_dir( ) . '/' . $file;
+	$path = $_SESSION['csvimp']['csv_path'] . '/' . $file;
 	$csv_check = substr( $file, -4 ); # Make sure it's a csv file for security
 	if ( is_file( $path ) && $csv_check == '.csv' ) {
 		downloadFile( $path, $enc );

@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://paulswebsolutions.com/wpcsv-csv-import
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.1
+Version: 1.2
 Author: Paul's Web Solutions
 Author URI: http://www.paulswebsolutions.com
 
@@ -53,7 +53,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			$backup_url = '';
 
 			$settings = array( 
-				'version' => '1.1',
+				'version' => '1.2',
 				'delimiter' => ',',
 				'enclosure' => '"',
 				'date_format' => 'US',
@@ -71,13 +71,14 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 					$this->settings[$key] = $settings[$key];
 				}
 			}
+			
+			$this->wpcsv = new pws_wpcsv_engine( $this->settings );
+
 			$this->save_settings( );
 
 			$this->csv->delimiter = $this->settings['delimiter'];
 			$this->csv->enclosure = $this->settings['enclosure'];
 			$this->csv->encoding = $this->settings['encoding'];
-
-			$this->wpcsv = new pws_wpcsv_engine( $this->settings );
 
 		}
 
@@ -129,6 +130,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				case 'export':
 					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename ) ), $this->settings );
 					$this->view->page( 'export', $options );
+					$_SESSION['csv_path'] = $this->settings['csv_path'];
 					break;
 				default:
 					$options = $this->settings;
@@ -201,7 +203,7 @@ if (!function_exists("pws_wpcsv_admin_page")) {
 
 if ( !function_exists( "pws_wpcsv_header" ) ) {
 	function pws_wpcsv_header( ) {
-		$ecsvi_url = get_bloginfo('wpurl') . '/wp-content/plugins/wp-csv/css/pws_wpcsv.css';
+		$ecsvi_url = plugins_url( '/css/pws_wpcsv.css', __FILE__ );
 		echo '<link type="text/css" rel="stylesheet" href="' . $ecsvi_url . '" />' . "\n";
 	}
 }
