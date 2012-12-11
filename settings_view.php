@@ -1,5 +1,5 @@
 <h2> CSV Settings</h2>
-<strong><?php echo $error;?></strong>
+<strong class='red'><?php echo $error;?></strong>
 <form method='post'>
 <input type='hidden' name='action' value='export'/>
 <?php echo $nonce ?>
