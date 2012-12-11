@@ -6,11 +6,11 @@ Requires at least: 3.3
 Tested up to: 3.4.2
 Stable tag: 1.2
 
-A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types.  Tags, Categories, Images, and Custom Fields are fully supported also.
+A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
 == Description ==
 
-Learn more about the plugin <a href='http://cpkwebsolutions.com/wp-csv'>here</a>.
+Most WP features are fully supported.  Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a>.
 
 == Installation ==
 
