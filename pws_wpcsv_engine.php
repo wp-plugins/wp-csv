@@ -15,7 +15,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			$posts_table = $wpdb->prefix . 'posts';
 			$postmeta_table = $wpdb->prefix . 'postmeta';
 			$post_fields = implode( ", ", $this->post_fields );
-			$sql = $wpdb->prepare( "SELECT DISTINCT $post_fields FROM $posts_table WHERE post_status in ('publish','future', 'private') AND post_type NOT IN ( 'nav_menu_item' ) ORDER BY post_modified DESC" );
+			$sql = "SELECT DISTINCT $post_fields FROM $posts_table WHERE post_status in ('publish','future', 'private') AND post_type NOT IN ( 'nav_menu_item' ) ORDER BY post_modified DESC";
 
 			$posts = $wpdb->get_results( $sql );
 
@@ -29,7 +29,8 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 
 				$meta_array = array( ); 
 				foreach ( $custom_fields as $cf ) {
-					$sql = $wpdb->prepare( "SELECT post_id, meta_value FROM $postmeta_table WHERE meta_key = '$cf'" );
+					$cf = mysqli_real_escape_string( $cf );
+					$sql = "SELECT post_id, meta_value FROM $postmeta_table WHERE meta_key = '$cf'";
 					$results = $wpdb->get_results( $sql, OBJECT_K );  
 					$meta_array[$cf] = $results;
 				}
