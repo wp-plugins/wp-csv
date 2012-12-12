@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WP CSV
-Plugin URI: http://paulswebsolutions.com/wpcsv-csv-import
+Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.2
-Author: Paul's Web Solutions
-Author URI: http://www.paulswebsolutions.com
+Version: 1.3
+Author: CPK Web Solutions
+Author URI: http://cpkwebsolutions.com
 
 	LICENSE
 
@@ -53,7 +53,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			$backup_url = '';
 
 			$settings = array( 
-				'version' => '1.2',
+				'version' => '1.3',
 				'delimiter' => ',',
 				'enclosure' => '"',
 				'date_format' => 'US',
