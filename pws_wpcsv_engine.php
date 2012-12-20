@@ -29,7 +29,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 
 				$meta_array = array( ); 
 				foreach ( $custom_fields as $cf ) {
-					$cf = mysqli_real_escape_string( $cf );
+					$cf = mysql_real_escape_string( $cf );
 					$sql = "SELECT post_id, meta_value FROM $postmeta_table WHERE meta_key = '$cf'";
 					$results = $wpdb->get_results( $sql, OBJECT_K );  
 					$meta_array[$cf] = $results;
