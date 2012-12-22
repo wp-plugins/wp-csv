@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.3.1
+Version: 1.3.2
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -53,17 +53,17 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			$backup_url = '';
 
 			$settings = array( 
-				'version' => '1.3.1',
 				'delimiter' => ',',
 				'enclosure' => '"',
 				'date_format' => 'US',
 				'encoding' => 'UTF-8',
-				'csv_path' => sys_get_temp_dir( )
+				'csv_path' => $this->get_csv_folder( )
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
+			$this->settings['version'] = '1.3.2';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
@@ -79,6 +79,22 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			$this->csv->delimiter = $this->settings['delimiter'];
 			$this->csv->enclosure = $this->settings['enclosure'];
 			$this->csv->encoding = $this->settings['encoding'];
+
+		}
+
+		function get_csv_folder( ) {
+
+			$tmp_folder = sys_get_temp_dir( );
+
+			if ( is_writable( $tmp_folder ) ) return $tmp_folder;
+
+			$csv_folder = $_SERVER['DOCUMENT'] . '/wpcsv-plugin';
+
+			if ( !file_exists( $csv_folder ) ) mkdir( $csv_folder, 0770 );
+
+			if ( is_writable( $csv_folder ) ) return $csv_folder;
+
+			return $tmp_folder;
 
 		}
 
@@ -130,7 +146,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				case 'export':
 					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename ) ), $this->settings );
 					$this->view->page( 'export', $options );
-					$_SESSION['csv_path'] = $this->settings['csv_path'];
+					$_SESSION['csvimp']['csv_path'] = $this->settings['csv_path'];
 					break;
 				default:
 					$options = $this->settings;
