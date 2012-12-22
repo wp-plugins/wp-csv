@@ -1,5 +1,5 @@
 <?php
-session_start( );
+if ( !session_id( ) ) session_start( );
 if ( isset( $_GET['file'] ) ) {
 	extract( $_GET );
 	$file = strtolower( $file );
