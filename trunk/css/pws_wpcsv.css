@@ -1,0 +1,25 @@
+div#wpcsv fieldset {
+	border: 1px solid black;
+}
+
+div#wpcsv table.wpcsv {
+	text-align: left;
+	border: 1px solid black;
+	background-color: white;
+}
+
+div#wpcsv table.wpcsv tr td {
+	padding: 5px;
+	padding-left: 10px;
+}
+
+div#wpcsv table.wpcsv tr th {
+	padding: 5px;
+	padding-left: 10px;
+	border-bottom: 1px solid black;
+	background-color: #dddddd;
+}
+
+div#wpcsv .red {
+	color: red;
+}
