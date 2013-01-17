@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.3.4
+Version: 1.3.3
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -64,7 +64,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.3.4';
+			$this->settings['version'] = '1.3.3';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
@@ -83,40 +83,67 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 
 		}
 
-		function folder_writable( $path ) {
-			return ( is_dir( $path ) && is_writable( $path ) );
-		}
-
-		function add_htaccess( $path ) {
-			if ( $this->folder_writable( $path ) ) {
-				return file_put_contents( "{$path}/.htaccess", 'Deny from all' );
-			}
-		}
-
 		function get_csv_folder( ) {
 
-			$wp_csv_folder = '/wpcsv_backups';
+			$tmp_folder = sys_get_temp_dir( );
 
-			# In order of preference
-			$paths = Array( 
-				sys_get_temp_dir( ),
-				ABSPATH,
-				WP_CONTENT_DIR,
-				WP_CONTENT_DIR . '/uploads'
-			);
-
-			foreach( $paths as $p ) {
-				$p .= $wp_csv_folder;
-				if ( ( !file_exists( $p ) && mkdir( $p, 0755 ) ) || $this->folder_writable( $p ) ) {
-					$chosen_folder = $p;
-					break;
+			if ( is_writable( $tmp_folder ) ) return $tmp_folder;
+			
+			elseif ( !is_writable( $tmp_folder ) ) 
+				{
+				$tmp_folder = ABSPATH;
+				
+				if(is_writable( $tmp_folder ) ) return $tmp_folder;
+				
+				elseif ( !is_writable( $tmp_folder ) ) 
+					{
+					$tmp_folder = WP_CONTENT_DIR . '/wp-csv-backups';
+					
+					if ( !file_exists( $tmp_folder ) ) 
+						{
+						mkdir( $tmp_folder , 0755 );
+						$shophtaccess = '.htaccess';
+						$handle = fopen($shophtaccess, 'w') or die('Cannot open file:  '.$shophtaccess);
+						$data = ' ';
+						fwrite($handle, $data);
+						
+						return $tmp_folder;	
+						}
+					elseif ( file_exists( $tmp_folder ) ) 
+						{
+						if(is_writable( $tmp_folder ) ) return $tmp_folder;
+						
+						elseif ( !is_writable( $tmp_folder ) ) 
+							{
+							$tmp_folder = WP_CONTENT_DIR . '/uploads/wp-csv-backups';
+					
+							if ( !file_exists( $tmp_folder ) ) 
+								{
+								mkdir( $tmp_folder , 0755 );
+								$shophtaccess = '.htaccess';
+								$handle = fopen($shophtaccess, 'w') or die('Cannot open file:  '.$shophtaccess);
+								$data = ' ';
+								fwrite($handle, $data);
+						
+								return $tmp_folder;	
+								}
+							elseif ( file_exists( $tmp_folder ) ) 
+								{
+								if(is_writable( $tmp_folder ) ) 
+								return $tmp_folder;	
+								}
+							}
+						}
+					}
 				}
-			}
+				
+			$csv_folder = $_SERVER['DOCUMENT'] . '/wpcsv-plugin';
 
-			# This will create .htaccess files below the web root (ie sys_temp, but shouldn't cause any harm)
-			if ( $chosen_folder && $this->add_htaccess( $chosen_folder ) ) {
-				return $chosen_folder;
-			}
+			if ( !file_exists( $csv_folder ) ) mkdir( $csv_folder, 0770 );
+
+			if ( is_writable( $csv_folder ) ) return $csv_folder;
+
+			return $tmp_folder;
 
 		}
 
@@ -139,14 +166,11 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				}
 				$this->settings['date_format'] = $_POST['date_format'];
 				$this->settings['encoding'] = $_POST['encoding'];
-				if ( $this->folder_writable( $_POST['csv_path'] ) ) {
+				if ( $this->csv_path_valid( $_POST['csv_path'] ) ) {
 					$this->settings['csv_path'] = $_POST['csv_path'];
 				} else {
-					$this->settings['csv_path'] = $this->get_csv_folder( );
-					if ( !$this->settings['csv_path'] ) {
-						$_POST['action'] = 'settings';
-						$error = "ERROR - Unable to find a folder to store your CSV files in.  Please refer to the <a href='http://cpkwebsolutions.com/plugins/wp-csv/faq'>FAQ</a> for a solution.";
-					}
+					$_POST['action'] = 'settings';
+					$error = "ERROR - CSV Path does not exist, is not writable, or was publicly accessible (insecure)!";
 				}
 				$this->settings['delimiter'] = substr( stripslashes( $_POST['delimiter'] ), 0, 1 );
 				$this->settings['enclosure'] = substr( stripslashes( $_POST['enclosure'] ), 0, 1 );
@@ -209,6 +233,20 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				$url = FALSE;
 			}
 			return $url;
+		}
+
+		private function csv_path_valid( $path ) {
+			# Make sure the folder exists, is accessible to the web server, and not accessible to the public
+
+			if ( !is_dir( $path ) ) return FALSE;
+
+			if ( !is_writable( $path ) ) return FALSE;
+
+			$web_root = addcslashes( $_SERVER['DOCUMENT_ROOT'], '/' );
+
+			if ( preg_match( '/' . $web_root . '/', $path ) ) return FALSE;
+
+			return TRUE;
 		}
 
 	}

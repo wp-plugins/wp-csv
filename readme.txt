@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -26,6 +26,8 @@ No screenshots available.
 
 == Changelog ==
 
+= 1.3.4 =
+* Enhancement: Plugin will now automatically create a backup folder in one of 4 locations (in order of preference) and add an .htaccess file to prevent unauthorized download.
 = 1.3.3 =
 * Fixed: Another session bug
 = 1.3.2 =
@@ -46,4 +48,4 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-Thanks for the feedback.  This version should be much more stable.
+1.3.4 - Simplified the user interface.
