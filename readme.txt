@@ -3,8 +3,8 @@ Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.3
-Tested up to: 3.5
-Stable tag: 1.3.4
+Tested up to: 3.5.1
+Stable tag: 1.3.5
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -26,6 +26,8 @@ No screenshots available.
 
 == Changelog ==
 
+= 1.3.5 =
+* Fixed: Error 'creating default object from empty value'.
 = 1.3.4 =
 * Enhancement: Plugin will now automatically create a backup folder in one of 4 locations (in order of preference) and add an .htaccess file to prevent unauthorized download.
 = 1.3.3 =
@@ -48,4 +50,4 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.3.4 - Simplified the user interface.
+1.3.5 - Minor bug fixed.
