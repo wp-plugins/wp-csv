@@ -5,7 +5,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 		var $post_fields = array( );
 
 		function __construct( $settings ) { // Constructor
-			$this->post_fields = array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order' );
+			$this->post_fields = array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' );
 			$this->settings = $settings;
 		}
 
@@ -50,6 +50,12 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 					foreach ( $custom_fields as $cf ) {
 						$val = $meta_array[$cf][$id]->meta_value;
 						$cfs[] = $val;
+					}
+
+					# Convert User id to username
+					if ( !empty( $p['post_author'] ) ) {
+						$user = get_user_by( 'id', $p['post_author'] );
+						$p['post_author'] = $user->get( 'user_login' );
 					}
 
 					// Get post tags for each post
@@ -131,6 +137,13 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 					$id = ( empty( $p['ID'] ) ) ? "[row {$this->row_index}]" : $p['ID'];
 					$action['Error'] = Array( 'id' => $id, 'error_id' => ERROR_MISSING_POST_PARENT );
 				}
+			}
+
+
+			# Convert User id to username
+			if ( !empty( $p['post_author'] ) ) {
+				$user = get_user_by( 'login', $p['post_author'] );
+				$p['post_author'] = $user->get( 'ID' );
 			}
 
 			// CREATE

@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.3.5
+Version: 1.3.6
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
