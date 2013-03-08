@@ -139,11 +139,16 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 				}
 			}
 
-
 			# Convert User id to username
 			if ( !empty( $p['post_author'] ) ) {
 				$user = get_user_by( 'login', $p['post_author'] );
-				$p['post_author'] = $user->get( 'ID' );
+				
+				if ( $user ) {
+					$p['post_author'] = $user->get( 'ID' );
+				} else {
+					$id = ( empty( $p['ID'] ) ) ? "[row {$this->row_index}]" : $p['ID'];
+					$action['Error'] = Array( 'id' => $id, 'error_id' => ERROR_INVALID_AUTHOR );
+				}
 			}
 
 			// CREATE
@@ -346,11 +351,12 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			
 			$this->elog( $csv_cats );
 			
-			$cats = explode( ",", $csv_cats );
+			$cats = explode( ",", trim( $csv_cats, ',' ) );
 			
 			array_walk( $cats, create_function( '&$v, $k', '$v = trim($v);' ) );
 			foreach ( $cats as $c ) {
 	
+				if ( empty( $c ) ) continue;
 				$this->elog( 'start loop' );
 	
 				$psplit = explode( '~', $c );

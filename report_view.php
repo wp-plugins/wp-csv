@@ -35,6 +35,9 @@ if ( count($stats['Error']) > 0 ): ?>
 			case ERROR_MISSING_POST_PARENT:
 				$message = "Post parent does not exist.  To avoid problems, you'll need to either re-import with a valid post_parent or create a new page with a matching id.";
 				break;
+			case ERROR_INVALID_AUTHOR:
+				$message = "Author could not be found.  Make sure you use the login id for the author not the display name.";
+				break;
 		}
 		$rows .= sprintf( "<tr><td>%s</td><td>%s</td></tr>", $id, $message );
 	}
