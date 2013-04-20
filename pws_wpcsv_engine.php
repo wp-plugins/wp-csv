@@ -9,13 +9,20 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			$this->settings = $settings;
 		}
 
-		function export( ) {
+		function export( $post_type = NULL ) {
 			global $wpdb;
 
 			$posts_table = $wpdb->prefix . 'posts';
 			$postmeta_table = $wpdb->prefix . 'postmeta';
 			$post_fields = implode( ", ", $this->post_fields );
 			$sql = "SELECT DISTINCT $post_fields FROM $posts_table WHERE post_status in ('publish','future', 'private') AND post_type NOT IN ( 'nav_menu_item' ) ORDER BY post_modified DESC";
+
+			if ( $post_type ) {
+				$filter = "post_type = '".$post_type."'";
+			} else {
+				$filter = "post_type NOT IN ( 'nav_menu_item' )";
+			}
+			$sql = "SELECT DISTINCT {$post_fields} FROM {$posts_table} WHERE post_status in ('publish','future','private','draft') AND {$filter} ORDER BY post_modified DESC";
 
 			$posts = $wpdb->get_results( $sql );
 

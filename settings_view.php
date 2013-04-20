@@ -28,7 +28,18 @@
 <p>If your data is important, then you should always have a full database backup so you can quickly recover if something goes wrong.  I have taken every precaution to protect your data, but it's impossible for me to test every combination of plugins and themes.  If you're unsure how to backup your database, then please talk to your web hosting provider.</p>
 <h2>First Time Users</h2>
 <p>The best way to start is to export your current pages and posts so you can see what column headings you need and what values Wordpress expects in each column.</p>
+<h2>Custom Post Type Filter</h2>
+<p><input type="radio" name="custom_post" value="" checked> All (No Filtering)
+<?php
+$post_types = get_post_types();
+$exclude_post_types = Array( 'page', 'post', 'attachment', 'revision', 'nav_menu_item', 'wp-types-group' );
+foreach ( $post_types as $post_type ) {
+	if ( !in_array( $post_type, $exclude_post_types ) ) {
+		$label = get_post_type_object( $post_type )->labels->name;
+		echo "<input type='radio' name='custom_post' value='{$post_type}'> {$label}";
+	}
+}
+?>
 <br/>
-
-<input type="submit" value="Next" />
+<p><input type="submit" value="Next" />
 </form>
