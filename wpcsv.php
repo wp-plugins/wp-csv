@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.3.7
+Version: 1.3.8
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -170,7 +170,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 					$this->view->page( 'report', $options );
 					break;
 				case 'export':
-					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename ) ), $this->settings );
+					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename, ( $_POST['custom_post'] != '' ? $_POST['custom_post'] : NULL ) ) ), $this->settings );
 					$this->view->page( 'export', $options );
 					$_SESSION['csvimp']['csv_path'] = $this->settings['csv_path'];
 					break;
@@ -196,8 +196,8 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			return $this->wpcsv->import( $rows );
 		}
 
-		function getExportLink( $filename ) {
-			$csv_data = $this->wpcsv->export( );
+		function getExportLink( $filename, $post_type = NULL ) {
+			$csv_data = $this->wpcsv->export( $post_type );
 			// Intercept 'ID' field and change to 'id' to prevent an excel bug.  Must reverse when importing too.
 			if ( $csv_data[0][0] == 'ID' ) { $csv_data[0][0] = 'id'; }
 
