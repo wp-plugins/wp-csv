@@ -7,6 +7,5 @@
 <?php require_once( $inner_page ); ?>
 </div>
 <div id='pws_wpcsv_footer'>
-<hr/>
 </div>
 </div>
