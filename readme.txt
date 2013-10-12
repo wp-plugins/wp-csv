@@ -3,14 +3,14 @@ Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.3
-Tested up to: 3.5.1
-Stable tag: 1.3.8
+Tested up to: 3.6.2
+Stable tag: 1.4.0
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
 == Description ==
 
-Most WP features are fully supported.  Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a>.
+Most WP features are fully supported, including custom post types and custom taxonomies.  Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a>.
 
 == Installation ==
 
@@ -26,6 +26,10 @@ No screenshots available.
 
 == Changelog ==
 
+= 1.4.0 =
+* Added support for custom taxonomies (NOTE: Old export files are not compatible since the column heading names have changed)
+* Added a check for iconv support
+* Tweak to reduce memory footprint (experimental)
 = 1.3.8 =
 * Added a custom post type filter for export (thanks to Phillip Temple for the idea and for submitting the code)
 = 1.3.7 =
@@ -57,4 +61,4 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.3.5 - Minor bug fixed.
+1.4.0 - Custom taxonomy support added (NOTE: Old export files are not compatible.  Make sure you export after upgrading and only import the newly exported files.)

@@ -54,8 +54,12 @@ function downloadFile( $fullPath, $encoding ){
 		
 		iconv_set_encoding( 'output_encoding', $encoding );
 
-		ob_start( 'iconv_handler' );
-
+		if ( function_exists( 'iconv_handler' ) ) {
+			ob_start( 'iconv_handler' );
+		} else {
+			ob_start( 'ob_gzhandler' );
+		}
+		
 		// Parse Info / Get Extension
 		$fsize = filesize($fullPath);
 		$path_parts = pathinfo($fullPath);
