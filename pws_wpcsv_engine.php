@@ -62,7 +62,9 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 					# Convert User id to username
 					if ( !empty( $p['post_author'] ) ) {
 						$user = get_user_by( 'id', $p['post_author'] );
-						$p['post_author'] = $user->get( 'user_login' );
+						if ( gettype( $user ) == 'WP_User' ) {
+							$p['post_author'] = $user->get( 'user_login' );
+						}
 					}
 
 					$taxonomy_fields = Array( );
