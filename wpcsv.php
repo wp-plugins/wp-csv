@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.4.0
+Version: 1.4.1
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -65,7 +65,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.4.0';
+			$this->settings['version'] = '1.4.1';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
