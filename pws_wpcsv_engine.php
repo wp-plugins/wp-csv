@@ -64,6 +64,8 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 						$user = get_user_by( 'id', $p['post_author'] );
 						if ( gettype( $user ) == 'object' ) {
 							$p['post_author'] = $user->get( 'user_login' );
+						} else { # Author id invalid, so blank the field.
+							$p['post_author'] = '';
 						}
 					}
 
@@ -151,7 +153,6 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			if ( $p['ID'] == "" ) { 
 
 				$id = wp_insert_post( $p );
-var_dump( $p );
 				$taxonomy_list = $this->get_taxonomy_list( );
 				foreach( $taxonomy_list as $t ) {
 					$this->import_taxonomy( $id, explode( ',', $p[$t] ), $t );
