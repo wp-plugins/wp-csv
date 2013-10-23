@@ -9,7 +9,6 @@ Stable tag: 1.4.3
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
 == Description ==
-
 Most WP features are fully supported:
 
 ** Posts, pages, and custom post types
