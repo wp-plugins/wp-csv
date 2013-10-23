@@ -5,7 +5,8 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 		var $post_fields = array( );
 
 		function __construct( $settings ) { // Constructor
-			$this->post_fields = array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' );
+			$this->post_fields = Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' );
+			$this->mandatory_fields = Array( 'ID', 'post_date', 'post_title' );
 			$this->settings = $settings;
 		}
 
@@ -25,17 +26,24 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			$sql = "SELECT DISTINCT {$post_fields} FROM {$posts_table} WHERE post_status in ('publish','future','private','draft') AND {$filter} ORDER BY post_modified DESC";
 
 			$posts = $wpdb->get_results( $sql );
-
 			if ( isset( $posts[0] ) ) {
-      	$sql = "SELECT DISTINCT meta_key FROM $postmeta_table WHERE meta_key NOT LIKE '\_%'";
+				if ( $this->settings['export_hidden_custom_fields'] ) {
+				      	$sql = "SELECT DISTINCT meta_key FROM $postmeta_table";
+				} else {
+				      	$sql = "SELECT DISTINCT meta_key FROM $postmeta_table WHERE meta_key NOT LIKE '\_%'";
+				}
 				$custom_fields = $wpdb->get_col( $sql );
 				
 				$post1 = get_object_vars($posts[0]);
 
 		  		$post_array[] = array_merge( array_keys( $post1 ), $this->get_taxonomy_list( ), Array( 'thumbnail' ), $custom_fields );
 
-				$meta_array = array( ); 
+				$post_array[0] = array_keys( $this->include_filter( array_flip( $post_array[0] ), $this->settings['include_field_list'] ) );
+				$post_array[0] = array_keys( $this->exclude_filter( array_flip( $post_array[0] ), $this->settings['exclude_field_list'] ) );
+				
+				$meta_array = Array( ); 
 				foreach ( $custom_fields as $cf ) {
+					if ( !in_array( $cf, $post_array[0] ) ) continue;
 					$cf = mysql_real_escape_string( $cf );
 					$sql = "SELECT post_id, meta_value FROM $postmeta_table WHERE meta_key = '$cf'";
 					$results = $wpdb->get_results( $sql, OBJECT_K );  
@@ -44,23 +52,32 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 
 				foreach ( $posts as $p ) { 
 					$p = get_object_vars( $p );
+					$p = $this->include_filter( $p, $this->settings['include_field_list'] );
+					$p = $this->exclude_filter( $p, $this->settings['exclude_field_list'] );
+					
 					$id = $p['ID'];
 
 					// Process thumb separately
-					$thumb_id = get_post_thumbnail_id( $id );
-					$thumb_src = wp_get_attachment_image_src( $thumb_id, 'full' );
-					$thumb_url = $thumb_src[0];
-					$upload_dir = wp_upload_dir();
-					$thumb_file = preg_replace( '|' . WP_CONTENT_URL . '/' . basename( $upload_dir['baseurl'] ) . '/|', '', $thumb_url );
+					if ( in_array( 'thumbnail', $post_array[0] ) ) {
+						$thumb_id = get_post_thumbnail_id( $id );
+						$thumb_src = wp_get_attachment_image_src( $thumb_id, 'full' );
+						$thumb_url = $thumb_src[0];
+						$upload_dir = wp_upload_dir();
+						$thumb_file = preg_replace( '|' . WP_CONTENT_URL . '/' . basename( $upload_dir['baseurl'] ) . '/|', '', $thumb_url );
+					}
 
-					$cfs = array( );
+					$cfs = Array( );
 					foreach ( $custom_fields as $cf ) {
+						if ( !in_array( $cf, $post_array[0] ) ) continue;
 						$val = $meta_array[$cf][$id]->meta_value;
+						if ( unserialize( $val ) && function_exists( 'json_encode' ) ) {
+							$val = json_encode( unserialize( $val ) );
+						}
 						$cfs[] = $val;
 					}
 
 					# Convert User id to username
-					if ( !empty( $p['post_author'] ) ) {
+					if ( isset( $p['post_author'] ) && !empty( $p['post_author'] ) ) {
 						$user = get_user_by( 'id', $p['post_author'] );
 						if ( gettype( $user ) == 'object' ) {
 							$p['post_author'] = $user->get( 'user_login' );
@@ -72,10 +89,14 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 					$taxonomy_fields = Array( );
 					$taxonomy_list = $this->get_taxonomy_list( );
 					foreach( $taxonomy_list as $taxonomy ) {
+						if ( !in_array( $taxonomy, $post_array[0] ) ) continue;
 						$taxonomy_fields[] = $this->export_taxonomy( wp_get_object_terms( $p['ID'], $taxonomy ) );
 					}
-
-					$post_array[] = array_merge( array_values( $p ), array_values( $taxonomy_fields ), Array( $thumb_file ), $cfs );
+					
+					$new_row = array_merge( array_values( $p ), array_values( $taxonomy_fields ) );
+					if ( in_array( 'thumbnail', $post_array[0] ) ) array_push( $new_row, $thumb_file );
+					$new_row = array_merge( $new_row, $cfs );
+					$post_array[] = $new_row;
 					wp_cache_flush( ); # Experimental
 				}
 			}
@@ -84,7 +105,52 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 		}
 
 	
+		function exclude_filter( Array $elements, Array $rules ) {
+
+			$filtered_array = $elements;
+
+			if ( is_array( $elements ) && !empty( $elements ) ) {
+				foreach( $elements as $key => $val ) {
+					if ( $this->rule_match( $key, $rules ) ) {
+						if ( !in_array( $key, $this->mandatory_fields ) ) unset( $filtered_array[ $key ] );
+					} 
+				} # End foreach
+			} # End if
+
+			return $filtered_array;
+		}
+
+		function include_filter( Array $elements, Array $rules ) {
+
+			$filtered_array = Array( );
+			
+			if ( is_array( $elements ) && !empty( $elements ) ) {
+				foreach( $elements as $key => $val ) {
+					if ( $this->rule_match( $key, $rules ) || in_array( $key, $this->mandatory_fields ) ) {
+						$filtered_array[ $key ] = $val;
+					}
+				} # End foreach
+			} # End if
+
+			return $filtered_array;
+
+		}
+
+		function rule_match( $value, Array $rules ) {
+			
+			if ( is_array( $rules ) && !empty( $rules ) ) {
+				foreach( $rules as $rule ) {
+					if ( $rule == $value ) return TRUE;
+					if ( $rule == '*' ) return TRUE; 
+					if ( substr( $rule, 0, 1 ) == '*' && preg_match( '/' . substr( $rule, 1 ) . '$/', $value ) ) return TRUE;
+					if ( substr( $rule, -1, 1 ) == '*' && preg_match( '/^' . substr( $rule, 0, -1 ) . '/', $value ) ) return TRUE;
+				} # End foreach
+			} # End if
+
+		}
+
 		function import( $posts ) {
+
 			$stats = array( 'Insert' => array( ), 'Update' => array( ), 'Delete' => array( ), 'Error' => array( ) );
 
 			$this->row_index = 0;
@@ -166,6 +232,9 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 				# Custom fields	
 				foreach( $cf as $key => $val ) {
 					if ( !empty( $val ) ) { 
+						if ( function_exists( 'json_decode' ) && json_decode( utf8_encode( $val ) ) ) {
+							$val = json_decode( $val, TRUE );
+						}
 						add_post_meta( $id, $key, $val, true );
 					}
 				}
@@ -231,11 +300,16 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 
 						$taxonomy_list = $this->get_taxonomy_list( );
 						foreach( $taxonomy_list as $t ) {
-							$this->import_taxonomy( $p['ID'], explode( ',', $p[$t] ), $t );
+							if ( isset( $p[ $t ] ) ) {
+								$this->import_taxonomy( $p['ID'], explode( ',', $p[$t] ), $t );
+							}
 						}
 
 						foreach( $cf as $key => $val ) {
 							if ( !empty( $val ) ) {
+								if ( function_exists( 'json_decode' ) && json_decode( utf8_encode( $val ) ) ) {
+									$val = json_decode( $val, TRUE );
+								}
 								update_post_meta( $p['ID'], $key, $val );
 							} else {
 								delete_post_meta( $p['ID'], $key );
@@ -278,7 +352,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 							} else { // No image found but thumb specified
 								// Error message
 							}
-						} else { // If the field is empty, then any thumb should be detached from the post
+						} elseif ( isset( $p['thumbnail'] ) ) { // If the field is empty, then any thumb should be detached from the post
 							delete_post_meta( $p['ID'], '_thumbnail_id' );					
 						}
 
@@ -296,6 +370,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 				}
 			}
 			wp_cache_flush( ); # Experimental
+
 			return $action;
 		}
 
