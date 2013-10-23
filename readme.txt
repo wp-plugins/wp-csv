@@ -12,12 +12,12 @@ A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, an
 Most WP features are fully supported:
 
 
-** Posts, pages, and custom post types
-** Tags, categories, and custom taxonomies  
-** Custom fields (simple and complex)
-** Thumbnails
-** Flexible filter system to easily control which fields export
-** Simple User Interface (if you know Excel or another spreadsheet program, you will find this plugin quite easy)
+* Posts, pages, and custom post types
+* Tags, categories, and custom taxonomies  
+* Custom fields (simple and complex)
+* Thumbnails
+* Flexible filter system to easily control which fields export
+* Simple User Interface (if you know Excel or another spreadsheet program, you will find this plugin quite easy)
 
 The plugin should now be usable with Woo Commerce, eShop, and most other plugins that are fully Wordpress compliant.
 
