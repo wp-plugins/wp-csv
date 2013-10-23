@@ -11,6 +11,7 @@ A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, an
 == Description ==
 Most WP features are fully supported:
 
+
 ** Posts, pages, and custom post types
 ** Tags, categories, and custom taxonomies  
 ** Custom fields (simple and complex)
@@ -82,4 +83,4 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.4.0 - Custom taxonomy support added (NOTE: Old export files are not compatible.  Make sure you export after upgrading and only import the newly exported files.)
+1.4.3 - All custom fields now exportable (even 'hidden' ones).  Complex custom field data exported and re-imported in JSON format.  Field include and exclude filtering added to help manage the large number of fields that may now be exported.
