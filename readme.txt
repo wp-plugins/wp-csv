@@ -4,13 +4,25 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.3
 Tested up to: 3.6.1
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
 == Description ==
 
-Most WP features are fully supported, including custom post types and custom taxonomies.  Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a>.
+Most WP features are fully supported:
+* Posts, pages, and custom post types
+* Tags, categories, and custom taxonomies  
+* Custom fields (simple and complex)
+* Thumbnails
+* Flexible filter system to easily control which fields export
+* Simple User Interface (if you know Excel or another spreadsheet program, you will find this plugin quite easy)
+
+The plugin should now be usable with Woo Commerce, eShop, and most other plugins that are fully Wordpress compliant.
+
+Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a> and read the full documentation including a <a href='http://cpkwebsolutions.com/plugins/wp-csv/quick-start-guide/'>quick start guide</a> and a description of all the kinds of fields you'll see.
+
+We welcome your feedback and feature requests.  Please also remember to <a href='http://cpkwebsolutions.com/donate'>support</a> the plugin.  A lot of time and effort goes into maintaining it!
 
 == Installation ==
 
@@ -26,6 +38,10 @@ No screenshots available.
 
 == Changelog ==
 
+= 1.4.3 =
+* Enabled export of 'hidden' post meta fields
+* Added include/exclude filtering for fields
+* Convert complex (serialized) custom fields to JSON and back
 = 1.4.2 =
 * Code cleanup
 * Fixed post_author bug (non-existant user ids will now export blank)
