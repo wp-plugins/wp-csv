@@ -16,14 +16,15 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			$posts_table = $wpdb->prefix . 'posts';
 			$postmeta_table = $wpdb->prefix . 'postmeta';
 			$post_fields = implode( ", ", $this->post_fields );
-			$sql = "SELECT DISTINCT $post_fields FROM $posts_table WHERE post_status in ('publish','future', 'private') AND post_type NOT IN ( 'nav_menu_item' ) ORDER BY post_modified DESC";
-
+			$limit = ( isset( $this->settings['limit'] ) ) ? $this->settings['limit'] : 1000;
+			$offset = ( isset( $this->settings['offset'] ) ) ? $this->settings['offset'] : 0;
+			
 			if ( $post_type ) {
 				$filter = "post_type = '".$post_type."'";
 			} else {
 				$filter = "post_type NOT IN ( 'nav_menu_item' )";
 			}
-			$sql = "SELECT DISTINCT {$post_fields} FROM {$posts_table} WHERE post_status in ('publish','future','private','draft') AND {$filter} ORDER BY post_modified DESC";
+			$sql = "SELECT DISTINCT {$post_fields} FROM {$posts_table} WHERE post_status in ('publish','future','private','draft') AND {$filter} ORDER BY post_modified DESC LIMIT {$offset},{$limit}";
 
 			$posts = $wpdb->get_results( $sql );
 			if ( isset( $posts[0] ) ) {

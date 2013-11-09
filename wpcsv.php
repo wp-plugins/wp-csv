@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.4.3
+Version: 1.4.4
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -62,13 +62,15 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				'csv_path' => $this->get_csv_folder( ),
 				'export_hidden_custom_fields' => '1',
 				'include_field_list' => Array( '*' ),
-				'exclude_field_list' => Array( )
+				'exclude_field_list' => Array( ),
+				'limit' => 1000,
+				'offset' => 1
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.4.3';
+			$this->settings['version'] = '1.4.4';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
@@ -163,6 +165,9 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				$this->settings['include_field_list'] = preg_split( '/(,|\s)/', $_POST['include_field_list'] );
 				
 				$this->settings['exclude_field_list'] =  preg_split( '/(,|\s)/', $_POST['exclude_field_list'] );
+				$this->settings['limit'] = $_POST['limit'];
+				$this->settings['offset'] = ( $_POST['offset'] > 0 ) ? $_POST['offset'] - 1 : 1;
+
 				$this->save_settings();
 			}
 
@@ -184,9 +189,13 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename, ( $_POST['custom_post'] != '' ? $_POST['custom_post'] : NULL ) ) ), $this->settings );
 					$this->view->page( 'export', $options );
 					$_SESSION['csvimp']['csv_path'] = $this->settings['csv_path'];
+				
 					break;
 				default:
 					$options = $this->settings;
+					global $wpdb;
+					$sql = "SELECT count(ID) FROM {$wpdb->posts} WHERE post_status IN ( 'publish', 'draft', 'future' )";
+					$options['total_rows'] = $wpdb->get_var( $sql );
 					$options['error'] =  $error;
 					$this->view->page( 'settings', $options );
 			}
