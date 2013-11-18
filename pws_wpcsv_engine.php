@@ -2,7 +2,8 @@
 if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 	class pws_wpcsv_engine {
 
-		var $post_fields = array( );
+		private $post_fields = Array( );
+		private $stats = Array( );
 
 		function __construct( $settings ) { // Constructor
 			$this->post_fields = Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' );
@@ -152,16 +153,16 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 
 		function import( $posts ) {
 
-			$stats = array( 'Insert' => array( ), 'Update' => array( ), 'Delete' => array( ), 'Error' => array( ) );
+			$this->stats = array( 'Insert' => array( ), 'Update' => array( ), 'Delete' => array( ), 'Error' => array( ) );
 
 			$this->row_index = 0;
 			foreach( $posts as $post ) {
 				$result = $this->import_post( $post, false );
 				foreach( $result as $k => $v ) {
-					$stats[$k][] = $v;
+					$this->stats[$k][] = $v;
 				}
 			}
-			return $stats;
+			return $this->stats;
 		}
 
 		function import_post( $post, $perm_delete ) { 
@@ -200,7 +201,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 				$post_parent = get_post( $p['post_parent'], ARRAY_A );
 				if ( !isset( $post_parent ) || $post_parent['post_type'] != 'page' ) {
 					$id = ( empty( $p['ID'] ) ) ? "[row {$this->row_index}]" : $p['ID'];
-					$action['Error'] = Array( 'id' => $id, 'error_id' => ERROR_MISSING_POST_PARENT );
+					$action['Error'] = Array( 'id' => $id, 'error_id' => pws_wpcsv::ERROR_MISSING_POST_PARENT );
 				}
 			}
 
@@ -212,7 +213,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 					$p['post_author'] = $user->get( 'ID' );
 				} else {
 					$id = ( empty( $p['ID'] ) ) ? "[row {$this->row_index}]" : $p['ID'];
-					$action['Error'] = Array( 'id' => $id, 'error_id' => ERROR_INVALID_AUTHOR );
+					$action['Error'] = Array( 'id' => $id, 'error_id' => pws_wpcsv::ERROR_INVALID_AUTHOR );
 				}
 			}
 
@@ -367,7 +368,7 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 						$action['Delete'] = $pid;
 					}
 				} else { // Post ID doesn't exist
-					$action['Error'] = Array( 'id' => $pid, 'error_id' => ERROR_MISSING_POST_ID );
+					$action['Error'] = Array( 'id' => $pid, 'error_id' => pws_wpcsv::ERROR_MISSING_POST_ID );
 				}
 			}
 			wp_cache_flush( ); # Experimental
@@ -476,6 +477,8 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 			foreach( $items as $i ) {
 				if ( empty( $i ) ) continue;
 				$split = preg_split( '/(~|:)/', trim( $i ) );
+				# Prevent "one, two, " causing problems (last item is a space)
+				if ( empty( $split[0] ) ) continue;
 				switch( count( $split ) ) {
 					case 1:
 						list( $name ) = $split;
@@ -500,7 +503,12 @@ if ( !class_exists( 'pws_wpcsv_engine' ) ) {
 				} else {
 					$term = wp_insert_term( $name, $taxonomy, Array( 'slug' => $slug, 'parent' => $parent_id ) );
 				}
-				$term_ids[] = (int)$term['term_id'];
+
+				if ( is_wp_error( $term ) ) {
+					$this->stats['Error'][] = Array( 'id' => $post_id, 'error_id' => pws_wpcsv::ERROR_INVALID_TAXONOMY_TERM );
+				} else {
+					$term_ids[] = (int)$term['term_id'];
+				}
 			}
 
 			wp_set_object_terms( $post_id, $term_ids, $taxonomy, FALSE );
