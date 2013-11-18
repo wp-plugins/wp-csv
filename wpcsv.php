@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.4.4
+Version: 1.4.5
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -30,11 +30,6 @@ require_once( 'pws_wpcsv_view.php' );
 require_once( 'pws_wpcsv_csv.php' );
 require_once( 'pws_wpcsv_engine.php' );
 
-// Global constants
-define( 'ERROR_MISSING_POST_ID', 1 );
-define( 'ERROR_MISSING_POST_PARENT', 2 );
-define( 'ERROR_INVALID_AUTHOR', 3 );
-
 // Initialise main class
 if ( !class_exists( 'pws_wpcsv' ) ) {
 
@@ -46,6 +41,11 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 		var $backup_url;
 		var $settings;
 		var $option_name = '_pws_wpcsv_settings';
+
+		const ERROR_MISSING_POST_ID = 1;
+		const ERROR_MISSING_POST_PARENT = 2;
+		const ERROR_MISSING_AUTHOR = 3;
+		const ERROR_INVALID_TAXONOMY_TERM = 4;
 
 		function __construct( ) { // Constructor
 			if ( !session_id( ) ) session_start( );
@@ -70,7 +70,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.4.4';
+			$this->settings['version'] = '1.4.5';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {

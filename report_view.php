@@ -29,14 +29,17 @@ if ( count($stats['Error']) > 0 ): ?>
 	foreach ( $stats['Error'] as $error ) {
 		extract( $error );
 		switch ( $error_id ) {
-			case ERROR_MISSING_POST_ID:
+			case pws_wpcsv::ERROR_MISSING_POST_ID:
 				$message = 'Unable to find a post with this ID.  Have you previously deleted it?  Try exporting to CSV to get an accurate list of posts.';
 				break;
-			case ERROR_MISSING_POST_PARENT:
+			case pws_wpcsv::ERROR_MISSING_POST_PARENT:
 				$message = "Post parent does not exist.  To avoid problems, you'll need to either re-import with a valid post_parent or create a new page with a matching id.";
 				break;
-			case ERROR_INVALID_AUTHOR:
+			case pws_wpcsv::ERROR_MISSING_AUTHOR:
 				$message = "Author could not be found.  Make sure you use the login id for the author not the display name.";
+				break;
+			case pws_wpcsv::ERROR_INVALID_TAXONOMY_TERM:
+				$message = "One or more taxonomy terms were invalid.  Check formatting and documentation to make sure the fields are correctly formatted.  Also try comparing to other rows that produce no error.";
 				break;
 		}
 		$rows .= sprintf( "<tr><td>%s</td><td>%s</td></tr>", $id, $message );
