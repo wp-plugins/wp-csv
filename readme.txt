@@ -3,8 +3,8 @@ Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.3
-Tested up to: 3.7.1
-Stable tag: 1.4.5
+Tested up to: 3.8
+Stable tag: 1.5.0
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -39,6 +39,11 @@ No screenshots available.
 
 == Changelog ==
 
+= 1.5.0 =
+* Compatible with WP 3.8
+* Improved look and feel
+* Improved memory management greatly, should now be able to process much larger numbers of posts and adapt better to available resources
+* More helpful error reporting
 = 1.4.5 =
 * Improved error handling and user feedback for badly formatted taxonomy terms.
 = 1.4.4 =
@@ -88,4 +93,4 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.4.3 - All custom fields now exportable (even 'hidden' ones).  Complex custom field data exported and re-imported in JSON format.  Field include and exclude filtering added to help manage the large number of fields that may now be exported.
+1.5.0 - Plugin should now be able to import and export much larger numbers of posts without running out of memory.

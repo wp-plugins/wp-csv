@@ -1,12 +1,16 @@
 <?php
-if ( !session_id( ) ) session_start( );
 if ( isset( $_GET['file'] ) ) {
 	extract( $_GET );
 	$file = strtolower( $file );
-	$path = $_SESSION['csvimp']['csv_path'] . '/' . $file;
+	$path = $csv_path . '/' . $file;
 	$csv_check = substr( $file, -4 ); # Make sure it's a csv file for security
-	if ( is_file( $path ) && $csv_check == '.csv' ) {
+	if ( file_exists( $path ) && $csv_check == '.csv' ) {
+		ob_end_clean( );
 		downloadFile( $path, $enc );
+		die( );
+	} else {
+		wp_redirect( site_url( ) . '/wp-admin/tools.php?page=wpcsv.php&action=export' );
+		die( );
 	}
 }
 
@@ -17,21 +21,22 @@ function downloadFile( $fullPath, $encoding ){
 		die('Headers Sent');
 
 	// Required for some browsers
-	if(ini_get('zlib.output_compression'))
-		ini_set('zlib.output_compression', 'Off');
+	if ( ini_get( 'zlib.output_compression' ) ) {
+		ini_set( 'zlib.output_compression', 'Off' );
+	}
 
-	ini_set('auto_detect_line_endings', true);
+	ini_set( 'auto_detect_line_endings', true );
 
 	// File Exists?
 	if ( file_exists( $fullPath ) ) {
 		
-		ob_clean();
+		ob_clean( );
 
 		# Encoding combos:
 		#
 		# UTF-8, BOM: EF BB BF
-		# UTF-16LE, FF FE, note: 'little endian' 
-		# UTF-16BE, FE FF, note: 'big endian' 
+		# UTF-16LE, FF FE, 'little endian' 
+		# UTF-16BE, FE FF, 'big endian' 
 		#
 
 		switch ( $encoding ) {
@@ -61,12 +66,12 @@ function downloadFile( $fullPath, $encoding ){
 		}
 		
 		// Parse Info / Get Extension
-		$fsize = filesize($fullPath);
-		$path_parts = pathinfo($fullPath);
-		$ext = strtolower($path_parts["extension"]);
+		$fsize = filesize( $fullPath );
+		$path_parts = pathinfo( $fullPath );
+		$ext = strtolower( $path_parts['extension'] );
 		 
 		// Determine Content Type
-		switch ($ext) {
+		switch ( $ext ) {
 			case "csv": $ctype="application/octet-stream"; break;
 			case "pdf": $ctype="application/pdf"; break;
 			case "exe": $ctype="application/octet-stream"; break;
@@ -92,11 +97,10 @@ function downloadFile( $fullPath, $encoding ){
 
 		echo $bom;
 		
-		#echo mb_convert_encoding( file_get_contents( $fullPath ), $encoding );
 		readfile( $fullPath );
+		die( );
 
 	} else {
 		die('File Not Found');
 	}
 }
-?>

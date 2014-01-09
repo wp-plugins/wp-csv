@@ -23,3 +23,27 @@ div#wpcsv table.wpcsv tr th {
 div#wpcsv .red {
 	color: red;
 }
+
+div#wpcsv div#progressbar {
+	height: 1em;
+	width: 98%;
+	display: none;
+}
+
+div#wpcsv div#download_link {
+	display: none;
+	padding: 1em;
+}
+
+div#wpcsv hr {
+	width: 98%;
+	margin-left: 0;
+}
+
+div#wpcsv div#export_wrapper {
+	width: 80%;
+}
+
+div#wpcsv input#start_export {
+	text-align: left;
+}

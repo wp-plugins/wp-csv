@@ -1,11 +1,14 @@
 <div id='wpcsv'>
-<div id='pws_wpcsv_header'>
-<h1>WP CSV <?php echo $version; ?></h1>
+<div id='cpk_wpcsv_header'>
+<h2>WP CSV</h2>
 <hr/>
 </div>
-<div id='pws_wpcsv_content'>
+<div id='cpk_wpcsv_content'>
+<div id='cpk_wpcsv_left'>
 <?php require_once( $inner_page ); ?>
 </div>
-<div id='pws_wpcsv_footer'>
+<?php require_once( $sidebar_page ); ?>
+</div>
+<div id='cpk_wpcsv_footer'>
 </div>
 </div>

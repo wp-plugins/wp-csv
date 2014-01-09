@@ -1,23 +1,77 @@
-<h2>Step 1: Export To CSV</h2>
-<?php
-	if ( !$export_link ) {
-		echo "No posts or pages found.  Please create at least one post or page and try again.";
-	} else {
-		echo "<a href='$export_link'>Click here to download</a>";
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script type="text/javascript">
+
+$( function( ) {
+
+	$( '#progressbar' ).progressbar( { value: 0 } );
+
+	var retpercent = 0;
+	var progress = 0;
+	var base_url = '<?php echo site_url( ); ?>';
+	function getProgress( progress, retpercent) {	
+		$.ajax({
+			url: base_url + '/wp-admin/admin-ajax.php?action=process_export',
+			type: "GET",
+			data: 'start=' + progress + '&progress=' + retpercent,
+			dataType : 'json',
+			success: function( data ) {
+				var percentage = parseFloat( data.percentagecomplete );
+				if ( percentage < 100 ) {
+					$( '#progressbar' ).progressbar( "value", percentage );
+					getProgress( data.position, data.percentagecomplete );
+				} else {
+					$( '#progressbar' ).progressbar( "value", percentage );
+					jQuery( '#download_link' ).show( );
+				}
+			}
+		});
 	}
-?>
 
-<h2>Step 2: Edit The CSV File</h2>
-<ul>
-<li><strong>CREATE:</strong> Just leave the ID field blank, fill in the other fields, and a new page or post will be created.</li>
-<li><strong>MODIFY:</strong> Keep the ID as it is and change the other fields.</li>
-<li><strong>DELETE:</strong> Add a minus.  ie to delete post number '123', the ID field should be '-123'.  Don't worry, the post will just be moved to trash, and you'll have 30 days before it gets permanently deleted.</li>
-</ul>
-<br/>
+	jQuery( '#start_export' ).on( 'click', function( ) {
+		jQuery( '#export_wrapper' ).hide( );
+		jQuery( '#download_link' ).hide( );
+		jQuery( '#progressbar' ).progressbar( "value", 0 );
+		jQuery( '#progressbar' ).removeClass( 'ui-widget-content' ).addClass( 'stripes' );
+		getProgress( 0, 0 );
+	});
+});
 
-<form method='post'>
-<input type='hidden' name='action' value='import'/>
-<input type='submit' value='Next'/>
+</script>
+<table class='widefat'>
+<thead>
+<tr><th colspan='2'><strong>Export To CSV</strong></th></tr>
+</thead>
+<tbody>
+<tr><th>Progress</th><td><div id="progressbar_holder"><div id="progressbar"></div></div>
+<div id="download_link">
+<a href='<?php echo $export_link; ?>'>Download CSV File</a>
+</div></td></tr>
+</tbody>
+</table>
+<br />
+<div id="export_wrapper">
+<div id="start_button_wrapper">
+<input type='button' id='start_export' value='Export' />
+</div>
+</div>
+<br />
+<table class='widefat'>
+<thead>
+<tr><th colspan='2'><strong>Upload CSV File For Import</strong></th></tr>
+</thead>
+<tbody>
+<tr><th>Select CSV File</th><td>
+<form enctype="multipart/form-data" action="" method="POST">
+<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $max_bits ?>" />
+<?php echo $nonce ?>
+<input type="hidden" name="action" value="import" />
+<input name="uploadedfile" type="file" />
 </fieldset>
+<strong class='red'><?php echo $error ?></strong></td></tr>
+</tbody>
+</table>
+<br />
+<input type='submit' value='Upload'/>
 </form>
-<br/>
