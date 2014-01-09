@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.4.5
+Version: 1.5.0
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -26,35 +26,58 @@ Author URI: http://cpkwebsolutions.com
 */
 
 // Load libraries
-require_once( 'pws_wpcsv_view.php' );
-require_once( 'pws_wpcsv_csv.php' );
-require_once( 'pws_wpcsv_engine.php' );
+spl_autoload_register( 'spl_autoload_classes' );
+
+function spl_autoload_classes( $name ) {
+
+	if ( class_exists( $name ) ) return FALSE;
+
+	$folders = Array( '' );
+	
+	if ( is_array( $folders ) && !empty( $folders ) ) {
+		foreach( $folders as $folder ) {
+			$file = dirname( __FILE__ ) . "/{$folder}{$name}.php";
+			if ( file_exists( $file ) ) {
+				require_once( $file );
+			}
+		} # End foreach
+	} # End if
+
+}
 
 // Initialise main class
-if ( !class_exists( 'pws_wpcsv' ) ) {
+if ( !class_exists( 'CPK_WPCSV' ) ) {
 
-	class pws_wpcsv {
+	class CPK_WPCSV {
 
-		var $view;
-		var $csv;
-		var $wpcsv;
-		var $backup_url;
-		var $settings;
-		var $option_name = '_pws_wpcsv_settings';
+		private $view;
+		private $csv;
+		private $wpcsv;
+		private $backup_url;
+		private $settings;
+		private $option_name = '_pws_wpcsv_settings';
+
+
+		const IMPORT_FILE_NAME = 'wpcsv-import.csv';
+		const EXPORT_FILE_NAME = 'wpcsv-export.csv';
 
 		const ERROR_MISSING_POST_ID = 1;
 		const ERROR_MISSING_POST_PARENT = 2;
 		const ERROR_MISSING_AUTHOR = 3;
 		const ERROR_INVALID_TAXONOMY_TERM = 4;
 
-		function __construct( ) { // Constructor
+		public function __construct( ) { // Constructor
+
+			ob_start( ); # For download... TODO: refactor MVC framework so that view functions run earlier
+
 			if ( !session_id( ) ) session_start( );
-			$this->view = new pws_wpcsv_view( );
-			$this->csv = new pws_wpcsv_CSV( );
+			$this->view = new CPK_WPCSV_View( );
+			$this->csv = new CPK_WPCSV_CSV( );
+			$this->log = new CPK_WPCSV_Log_Model( );
 
 			$backup_url = '';
 
-			$settings = array( 
+			$settings = Array( 
 				'delimiter' => ',',
 				'enclosure' => '"',
 				'date_format' => 'US',
@@ -63,43 +86,53 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				'export_hidden_custom_fields' => '1',
 				'include_field_list' => Array( '*' ),
 				'exclude_field_list' => Array( ),
-				'limit' => 1000,
-				'offset' => 1
+				'post_type' => NULL,
+				'limit' => 3000,
+				'post_fields' => Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' ),
+				'mandatory_fields' => Array( 'ID', 'post_date', 'post_title' )
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.4.5';
+			$this->settings['version'] = '1.5.0';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
-				if ( !in_array( $key, $current_keys ) ) {
-					$this->settings[$key] = $settings[$key];
+				if ( !in_array( $key, $current_keys ) || is_null( $this->settings[ $key ] ) ) {
+					$this->settings[ $key ] = $settings[$key];
 				}
 			}
 			
-			$this->wpcsv = new pws_wpcsv_engine( $this->settings );
+			$this->wpcsv = new CPK_WPCSV_Engine( $this->settings );
 
 			$this->save_settings( );
 
 			$this->csv->delimiter = $this->settings['delimiter'];
 			$this->csv->enclosure = $this->settings['enclosure'];
 			$this->csv->encoding = $this->settings['encoding'];
+			
+			add_action( 'wp_ajax_process_export', Array( $this, 'process_export' ) );
+			add_action( 'wp_ajax_process_import', Array( $this, 'process_import' ) );
 
 		}
 
-		function folder_writable( $path ) {
+		public function set_settings( $settings ) {
+			$this->settings = $settings;
+			$this->save_settings( );
+		}
+
+		public function folder_writable( $path ) {
 			return ( is_dir( $path ) && is_writable( $path ) );
 		}
 
-		function add_htaccess( $path ) {
+		public function add_htaccess( $path ) {
 			if ( $this->folder_writable( $path ) ) {
 				return file_put_contents( "{$path}/.htaccess", 'Deny from all' );
 			}
 		}
 
-		function get_csv_folder( ) {
+		public function get_csv_folder( ) {
 
 			$wp_csv_folder = '/wpcsv_backups';
 
@@ -126,11 +159,12 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 
 		}
 
-		function admin_pages( ) {
+		public function admin_pages( ) {
 
-			if ( $_POST['action'] == 'report' && $_FILES['uploadedfile']['name'] == '' ) {
-				$error = 'Invalid file';
-				$_POST['action'] = 'import';
+			if ( $_POST['action'] == 'import' && $_FILES['uploadedfile']['name'] == '' ) {
+				$error = 'You must select a file to upload and import.';
+				$_POST['action'] = 'export';
+				$_REQUEST['action'] = 'export';
 			}
 
 			if ( $_POST['action'] == 'export' ) {
@@ -165,31 +199,38 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 				$this->settings['include_field_list'] = preg_split( '/(,|\s)/', $_POST['include_field_list'] );
 				
 				$this->settings['exclude_field_list'] =  preg_split( '/(,|\s)/', $_POST['exclude_field_list'] );
-				$this->settings['limit'] = $_POST['limit'];
-				$this->settings['offset'] = ( $_POST['offset'] > 0 ) ? $_POST['offset'] - 1 : 1;
+				$this->settings['post_type'] = $_POST['custom_post'];
 
 				$this->save_settings();
 			}
 
 			$subdir = '/uploads';
-			$filename = 'wpcsv-export-' . date('YmdHis');
+			$filename = self::EXPORT_FILE_NAME;
 
-			switch ( $_POST['action'] ) {
+			switch ( $_REQUEST['action'] ) {
 				case 'checkfailed':
 					$this->view->page( 'checkfailed', array( ) );
 				case 'import':
-					$options = array_merge( array( 'max_bits' => 268435456, 'nonce' => wp_nonce_field( 'pws_wpcsv_upload' ), 'error' => $error ), $this->settings );
+					move_uploaded_file( $_FILES['uploadedfile']['tmp_name'], $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME );
+					$options['file_name'] = $_FILES['uploadedfile']['name'];
+					$options['error'] = $error;
 					$this->view->page( 'import', $options );
 					break;
 				case 'report':
-					$options = array_merge( array( 'stats' => $this->getReport( $_FILES['uploadedfile'] ), 'backup_link' => get_post_meta( 1, '_pws_wpcsv_backup', TRUE ) ), $this->settings );
+					$options = array_merge( Array( 'messages' => $this->log->get_message_list( ), $this->settings ) );
+					$options['error'] =  $error;
 					$this->view->page( 'report', $options );
 					break;
 				case 'export':
-					$options = array_merge( array( 'export_link' => $this->getExportLink( $filename, ( $_POST['custom_post'] != '' ? $_POST['custom_post'] : NULL ) ) ), $this->settings );
+					$this->prepare_export( );
+					$enc = $this->settings['encoding'];
+					$url = site_url( ) . "/wp-admin/tools.php?page=wpcsv.php&action=download&file=$filename&enc=$enc";
+					$options = array_merge( Array( 'export_link' => $url ), $this->settings );
+					$options['error'] = $error;
 					$this->view->page( 'export', $options );
-					$_SESSION['csvimp']['csv_path'] = $this->settings['csv_path'];
-				
+					break;
+				case 'download':
+					$this->view->page( 'download', $this->settings );
 					break;
 				default:
 					$options = $this->settings;
@@ -201,7 +242,7 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			}
 		}
 
-		function save_settings( ) {
+		public function save_settings( ) {
 			update_option( $this->option_name, $this->settings );
 			// A bit ugly but necessary, refactor later
 			$this->csv->delimiter = $this->settings['delimiter'];
@@ -211,25 +252,44 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 			$this->wpcsv->settings = $this->settings;
 		}
 
-		function getReport( $file ) {
-			$rows = $this->csv->loadFromFile( $file );
-			return $this->wpcsv->import( $rows );
+		public function prepare_export( ) {
+			$this->wpcsv->prepare( );
 		}
+		
+		public function process_export( ) {
+			$start 	= isset( $_GET['start'] ) ? $_GET['start'] : 0;
 
-		function getExportLink( $filename, $post_type = NULL ) {
-			$csv_data = $this->wpcsv->export( $post_type );
-			// Intercept 'ID' field and change to 'id' to prevent an excel bug.  Must reverse when importing too.
-			if ( $csv_data[0][0] == 'ID' ) { $csv_data[0][0] = 'id'; }
+			$total = $this->wpcsv->get_total( );
 
-			if ( $this->csv->saveToFile( $csv_data, $filename, $this->settings['csv_path'] ) ) {
-				$plugin_dir = basename( dirname( __FILE__ ) );
-				$enc = $this->settings['encoding'];
-				$url = WP_PLUGIN_URL . "/$plugin_dir/download.php?file=$filename.csv&enc=$enc";
-				update_post_meta( 1, '_pws_wpcsv_backup', $url );
-			} else {
-				$url = FALSE;
-			}
-			return $url;
+			$include_headings = ( $start == 0 );
+
+			$number_processed = $this->wpcsv->export( $include_headings );
+
+			$position = $start + $number_processed;
+			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
+
+			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage ) );
+			die( );
+		}
+		
+		public function process_import( ) {
+
+			$file = $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME;
+			
+			$start = $_GET['start'];
+
+			$total = ( $_GET['lines'] == 0 ) ? $this->csv->line_count( $file ) : $_GET['lines'];
+
+			$rows = $this->csv->load( $file, $start, $this->settings['limit'] );
+			
+			$number_processed = $this->wpcsv->import( $rows );
+
+			$position = $start + $number_processed;
+
+			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
+
+			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );
+			die( );
 		}
 
 	}
@@ -237,31 +297,30 @@ if ( !class_exists( 'pws_wpcsv' ) ) {
 
 // Instantiate
 
-if (!function_exists("pws_wpcsv_admin_page")) {
-	function pws_wpcsv_admin_page() {
-		global $pws_wpcsv;
-		if (!isset($pws_wpcsv)) {
+if ( !function_exists( "pws_wpcsv_admin_page" ) ) {
+	function pws_wpcsv_admin_page( ) {
+		global $cpk_wpcsv;
+		if ( !isset( $cpk_wpcsv ) ) {
 			return;
 		}
-		if (function_exists( 'add_submenu_page' ) ) {
-			add_submenu_page( 'tools.php', __( 'WP CSV' ), __( 'WP CSV' ), 'administrator', basename(__FILE__), array( &$pws_wpcsv, 'admin_pages' ) );
+		if ( function_exists( 'add_submenu_page' ) ) {
+			add_submenu_page( 'tools.php', __( 'WP CSV' ), __( 'WP CSV' ), 'administrator', basename(__FILE__), array( &$cpk_wpcsv, 'admin_pages' ) );
 		}
 	}	
 }
 
 if ( !function_exists( "pws_wpcsv_header" ) ) {
 	function pws_wpcsv_header( ) {
-		$ecsvi_url = plugins_url( '/css/pws_wpcsv.css', __FILE__ );
+		$ecsvi_url = plugins_url( '/css/cpk_wpcsv.css', __FILE__ );
 		echo '<link type="text/css" rel="stylesheet" href="' . $ecsvi_url . '" />' . "\n";
 	}
 }
 
 //Actions and Filters	
-if (class_exists("pws_wpcsv")) {
-
-	$pws_wpcsv = new pws_wpcsv();
+if ( class_exists( "CPK_WPCSV" ) ) {
+	global $cpk_wpcsv;
+	$cpk_wpcsv = new CPK_WPCSV( );
 
 	add_action( 'admin_menu', 'pws_wpcsv_admin_page' );
-	add_action( 'admin_head', 'pws_wpcsv_header');
-
+	add_action( 'admin_head', 'pws_wpcsv_header' );
 }
