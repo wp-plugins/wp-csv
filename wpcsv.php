@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.5.0
+Version: 1.5.1
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 
@@ -95,7 +95,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.5.0';
+			$this->settings['version'] = '1.5.1';
 
 			$current_keys = array_keys( $this->settings );
 			foreach( array_keys( $settings ) as $key ) {
@@ -261,6 +261,11 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 			$total = $this->wpcsv->get_total( );
 
+			if ( $total == 0 ) {
+				echo json_encode( Array( 'position' => 0, 'percentagecomplete' => -1 ) );
+				die( );
+			}
+
 			$include_headings = ( $start == 0 );
 
 			$number_processed = $this->wpcsv->export( $include_headings );
@@ -281,12 +286,12 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			$total = ( $_GET['lines'] == 0 ) ? $this->csv->line_count( $file ) : $_GET['lines'];
 
 			$rows = $this->csv->load( $file, $start, $this->settings['limit'] );
-			
+
 			$number_processed = $this->wpcsv->import( $rows );
 
 			$position = $start + $number_processed;
 
-			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
+			$ret_percentage = round( ( ( $position ) / $total ) * 100 );
 
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );
 			die( );

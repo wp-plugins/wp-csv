@@ -3,13 +3,13 @@
 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 <script type="text/javascript">
 
-$( function( ) {
+jQuery( function( ) {
 
-	$( '#progressbar' ).progressbar( { value: 0 } );
+	jQuery( '#progressbar' ).progressbar( { value: 0 } );
 
 	var base_url = '<?php echo site_url( ); ?>';
 	function getProgress( start, retpercent, lines ) {	
-		$.ajax({
+		jQuery.ajax({
 			url: base_url + '/wp-admin/admin-ajax.php?action=process_import',
 			type: "GET",
 			data: 'start=' + start + '&progress=' + retpercent + '&lines=' + lines,
@@ -17,10 +17,10 @@ $( function( ) {
 			success: function( data ) {
 				var percentage = parseFloat( data.percentagecomplete );
 				if ( percentage < 100 ) {
-					$( '#progressbar' ).progressbar( "value", percentage );
+					jQuery( '#progressbar' ).progressbar( "value", percentage );
 					getProgress( data.position, data.percentagecomplete, data.lines );
 				} else {
-					$( '#progressbar' ).progressbar( "value", percentage );
+					jQuery( '#progressbar' ).progressbar( "value", percentage );
 					jQuery( '#download_link' ).show( );
 					location.search = '?page=wpcsv.php&action=report';
 				}

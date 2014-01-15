@@ -59,7 +59,6 @@ class CPK_WPCSV_CSV {
 		while( fgetcsv( $handle ) ) {
 			$linecount++;
 		}
-		error_log( 'linecount: ' . $linecount );
 		fclose( $handle );
 		return $linecount + $offset; # Don't count CSV header row
 	}

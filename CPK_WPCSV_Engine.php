@@ -38,7 +38,7 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 
 			$posts = $this->posts_model->get_posts( $this->settings['post_fields'], $this->settings['post_type'], $post_ids );
 			
-			if ( !is_array( $posts ) ) return;
+			if ( !is_array( $posts ) || empty( $posts ) ) return 0;
 
 			$custom_fields = $this->posts_model->get_custom_field_list( $this->settings['export_hidden_custom_fields'] );
 
