@@ -37,5 +37,5 @@ foreach ( $post_types as $post_type ) {
 ?></td></tr>
 </tbody>
 </table>
-<p><input type="submit" value="Save and Export" /></p>
+<p><input type="submit" value="Save and Go To Import/Export" /></p>
 </form>

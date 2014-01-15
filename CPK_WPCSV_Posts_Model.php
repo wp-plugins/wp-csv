@@ -14,7 +14,7 @@ class CPK_WPCSV_Posts_Model {
 	private function build_query( $fields, $post_type, $post_id_list = NULL ) {
 		$post_type_filter = ( $post_type ) ?  "AND post_type = '{$post_type}'" : '';
 		$post_id_filter = ( isset( $post_id_list ) ) ? "AND ID IN ( " . implode( ',', $post_id_list ) . " )" : '';
-		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE post_status in ('publish','future','private','draft') {$post_type_filter} {$post_id_filter} ORDER BY post_modified DESC";
+		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE post_status in ('publish','future','private','draft', 'pending') {$post_type_filter} {$post_id_filter} ORDER BY post_modified DESC";
 		return $sql;
 	}
 
@@ -22,6 +22,7 @@ class CPK_WPCSV_Posts_Model {
 		$sql = $this->build_query( 'ID,post_modified', $post_type );
 		$results = $this->db->get_results( $sql, ARRAY_A );
 		
+		$post_ids = Array( );
 		if ( is_array( $results ) && !empty( $results ) ) {
 			foreach( $results as $result ) {
 				$post_ids[] = $result['ID'];
@@ -35,7 +36,7 @@ class CPK_WPCSV_Posts_Model {
 		$field_list = '`' . implode( '`,`', $fields ) . '`';
 		$sql = $this->build_query( $field_list, $post_type, $post_ids );
 		$results = $this->db->get_results( $sql, ARRAY_A );
-		return $results;
+		return (Array)$results;
 	}
 
 	public function get_custom_field_list( $all = FALSE ) {

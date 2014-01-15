@@ -3,26 +3,29 @@
 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 <script type="text/javascript">
 
-$( function( ) {
+jQuery( function( ) {
 
-	$( '#progressbar' ).progressbar( { value: 0 } );
+	jQuery( '#progressbar' ).progressbar( { value: 0 } );
 
 	var retpercent = 0;
 	var progress = 0;
 	var base_url = '<?php echo site_url( ); ?>';
 	function getProgress( progress, retpercent) {	
-		$.ajax({
+		jQuery.ajax({
 			url: base_url + '/wp-admin/admin-ajax.php?action=process_export',
 			type: "GET",
 			data: 'start=' + progress + '&progress=' + retpercent,
 			dataType : 'json',
 			success: function( data ) {
 				var percentage = parseFloat( data.percentagecomplete );
-				if ( percentage < 100 ) {
-					$( '#progressbar' ).progressbar( "value", percentage );
+				if ( percentage < 0 ) {
+					jQuery( '#progressbar' ).addClass( 'ui-widget-content' ).removeClass( 'stripes' );
+					jQuery( '#nothing-to-export' ).show( );
+				} else if ( percentage < 100 ) {
+					jQuery( '#progressbar' ).progressbar( "value", percentage );
 					getProgress( data.position, data.percentagecomplete );
 				} else {
-					$( '#progressbar' ).progressbar( "value", percentage );
+					jQuery( '#progressbar' ).progressbar( "value", percentage );
 					jQuery( '#download_link' ).show( );
 				}
 			}
@@ -47,7 +50,9 @@ $( function( ) {
 <tr><th>Progress</th><td><div id="progressbar_holder"><div id="progressbar"></div></div>
 <div id="download_link">
 <a href='<?php echo $export_link; ?>'>Download CSV File</a>
-</div></td></tr>
+</div>
+<p id='nothing-to-export'>You seem to have nothing to export.  Add a post or page and try again.</p>
+</td></tr>
 </tbody>
 </table>
 <br />

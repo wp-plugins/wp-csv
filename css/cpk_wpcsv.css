@@ -106,6 +106,10 @@ div#wpcsv div#download_link {
 	padding: 1em;
 }
 
+div#wpcsv p#nothing-to-export {
+	display: none;
+}
+
 div#wpcsv hr {
 	width: 98%;
 	margin-left: 0;
