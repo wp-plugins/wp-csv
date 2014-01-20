@@ -1,18 +1,45 @@
-<h2>Import Results</h2>
+<h2><?php _e( 'Import Results', 'wp-csv' ); ?></h2>
 
-<table class='widefat'>
-<thead>
-<tr><th>Type</th><th>Message</th></tr>
-</thead>
-<tbody>
 <?php
 
-if ( is_array( $messages ) && !empty( $messages ) ) {
-	foreach( $messages as $message ) {
-		echo "<tr><td>{$message->category}</td><td>{$message->msg}</td></tr>";
+if ( is_array( $info_messages ) && !empty( $info_messages ) ) {
+	$message_heading = __( 'Details', 'wp-csv' );
+	$info_html = "<table class='widefat'><thead><tr><th>{$message_heading}</th></tr></thead><tbody>";
+
+	foreach( $info_messages as $message ) {
+		$info_html .= "<tr><td>{$message->msg}</td></tr>";
 	} # End foreach
-} else {
-	echo "<tr><td colspan='2'>Imported successfully, with no errors.</td></tr>";
+	$info_html .= "</tbody></table>";
+}
+
+if ( is_array( $error_messages ) && !empty( $error_messages ) ) {
+	$message_heading = __( 'Errors', 'wp-csv' );
+	$error_html = "<table class='widefat'><thead><tr><th>{$message_heading}</th></tr></thead><tbody>";
+
+	foreach( $error_messages as $message ) {
+		$error_html .= "<tr><td>{$message->msg}</td></tr>";
+	} # End foreach
+	$error_html .= "</tbody></table>";
+}
+
+if ( is_array( $warning_messages ) && !empty( $warning_messages ) ) {
+	$message_heading = __( 'Warnings', 'wp-csv' );
+	$warning_html = "<table class='widefat'><thead><tr><th>{$message_heading}</th></tr></thead><tbody>";
+
+	foreach( $warning_messages as $message ) {
+		$warning_html .= "<tr><td>{$message->msg}</td></tr>";
+	} # End foreach
+	$warning_html .= "</tbody></table>";
+}
+
+echo $info_html . '<br />';
+
+if ( !empty( $error_html ) ) echo $error_html . '<br />';
+if ( !empty( $warning_html ) ) echo $warning_html . '<br />';
+
+if ( empty( $error_html ) && empty( $warning_html ) ) {
+	$success_message = __( 'Imported successfully, with no errors or warnings.', 'wp-csv' );
+	echo "<p><strong>{$success_message}</strong></p>";
 }
 
 ?>

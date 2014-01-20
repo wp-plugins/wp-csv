@@ -3,9 +3,10 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.5.1
+Version: 1.5.2
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
+Text Domain: wp-csv
 
 	LICENSE
 
@@ -95,9 +96,13 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.5.1';
+			$this->settings['version'] = '1.5.2';
 
-			$current_keys = array_keys( $this->settings );
+			$current_keys = Array( );
+			if ( is_array( $this->settings ) ) {
+				$current_keys = array_keys( $this->settings );
+			}
+
 			foreach( array_keys( $settings ) as $key ) {
 				if ( !in_array( $key, $current_keys ) || is_null( $this->settings[ $key ] ) ) {
 					$this->settings[ $key ] = $settings[$key];
@@ -185,7 +190,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$this->settings['csv_path'] = $this->get_csv_folder( );
 					if ( !$this->settings['csv_path'] ) {
 						$_POST['action'] = 'settings';
-						$error = "ERROR - Unable to find a folder to store your CSV files in.  Please refer to the <a href='http://cpkwebsolutions.com/plugins/wp-csv/faq'>FAQ</a> for a solution.";
+						$error = __( "ERROR - Unable to find a folder to store your CSV files in.  Please refer to the <a href='http://cpkwebsolutions.com/plugins/wp-csv/faq'>FAQ</a> for a solution.", 'wp-csv' );
 					}
 				}
 				$this->settings['delimiter'] = substr( stripslashes( $_POST['delimiter'] ), 0, 1 );
@@ -217,14 +222,16 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$this->view->page( 'import', $options );
 					break;
 				case 'report':
-					$options = array_merge( Array( 'messages' => $this->log->get_message_list( ), $this->settings ) );
+					$this->log->add_message( __( "Limit: {$this->settings['limit']} (This is how many rows WP CSV can process at a time based on available server resources.  You should expect it to fluctuate.)", 'wp-csv' ), 'Info' );
+					$this->log->store_messages( );
+					$options = array_merge( Array( 'info_messages' => $this->log->get_message_list( 'Info' ), 'warning_messages' => $this->log->get_message_list( 'Warning' ), 'error_messages' => $this->log->get_message_list( 'Error' ) ), $this->settings );
 					$options['error'] =  $error;
 					$this->view->page( 'report', $options );
 					break;
 				case 'export':
 					$this->prepare_export( );
 					$enc = $this->settings['encoding'];
-					$url = site_url( ) . "/wp-admin/tools.php?page=wpcsv.php&action=download&file=$filename&enc=$enc";
+					$url = site_url( ) . "/wp-admin/tools.php?page=wp-csv.php&action=download&file=$filename&enc=$enc";
 					$options = array_merge( Array( 'export_link' => $url ), $this->settings );
 					$options['error'] = $error;
 					$this->view->page( 'export', $options );
@@ -233,6 +240,15 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$this->view->page( 'download', $this->settings );
 					break;
 				default:
+					$this->log->empty_table( );
+					$max_memory = ini_get( 'memory_limit' );
+					$max_execution_time = $this->wpcsv->get_max_execution_time( );
+					$memory_usage = $this->wpcsv->get_memory_usage( );
+					$this->log->add_message( __( "Max Memory: {$max_memory} (This is a server setting.)", 'wp-csv' ), 'Info' );
+					$this->log->add_message( __( "Max Execution Time: {$max_execution_time} (This is a server setting.)", 'wp-csv' ), 'Info' );
+					$this->log->add_message( __( "Initial Memory Usage: {$memory_usage}% (This is on the settings page, before the plugin does any real work)", 'wp-csv' ), 'Info' );
+					$this->log->store_messages( );
+					
 					$options = $this->settings;
 					global $wpdb;
 					$sql = "SELECT count(ID) FROM {$wpdb->posts} WHERE post_status IN ( 'publish', 'draft', 'future' )";
@@ -291,7 +307,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 			$position = $start + $number_processed;
 
-			$ret_percentage = round( ( ( $position ) / $total ) * 100 );
+			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
 
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );
 			die( );
@@ -302,8 +318,8 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 // Instantiate
 
-if ( !function_exists( "pws_wpcsv_admin_page" ) ) {
-	function pws_wpcsv_admin_page( ) {
+if ( !function_exists( "cpk_wpcsv_admin_page" ) ) {
+	function cpk_wpcsv_admin_page( ) {
 		global $cpk_wpcsv;
 		if ( !isset( $cpk_wpcsv ) ) {
 			return;
@@ -314,18 +330,38 @@ if ( !function_exists( "pws_wpcsv_admin_page" ) ) {
 	}	
 }
 
-if ( !function_exists( "pws_wpcsv_header" ) ) {
-	function pws_wpcsv_header( ) {
+if ( !function_exists( "cpk_wpcsv_header" ) ) {
+	function cpk_wpcsv_header( ) {
 		$ecsvi_url = plugins_url( '/css/cpk_wpcsv.css', __FILE__ );
 		echo '<link type="text/css" rel="stylesheet" href="' . $ecsvi_url . '" />' . "\n";
 	}
 }
 
+if ( !function_exists( 'cpk_add_settings_link' ) ) {
+	function cpk_add_settings_link( $links, $file ) {
+		if ( $file == 'wp-csv/wp-csv.php' ) {
+			$settings_link = "<a href='tools.php?page=wp-csv.php'>Settings</a>";
+			$links = array_merge( $links, array( $settings_link ) );
+		}
+
+		return $links;
+	}
+}	
+
+if ( !function_exists( 'cpk_load_text_domain' ) ) {
+	function cpk_load_text_domain( ) {
+		load_plugin_textdomain( 'wp-csv', FALSE, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+	}
+}
+
 //Actions and Filters	
 if ( class_exists( "CPK_WPCSV" ) ) {
-	global $cpk_wpcsv;
-	$cpk_wpcsv = new CPK_WPCSV( );
+global $cpk_wpcsv;
+$cpk_wpcsv = new CPK_WPCSV( );
 
-	add_action( 'admin_menu', 'pws_wpcsv_admin_page' );
-	add_action( 'admin_head', 'pws_wpcsv_header' );
+add_action( 'admin_menu', 'cpk_wpcsv_admin_page' );
+add_action( 'admin_head', 'cpk_wpcsv_header' );
+add_filter( 'plugin_action_links', 'cpk_add_settings_link', 10, 2 );
+add_action( 'plugins_loaded', 'cpk_load_text_domain' );
+
 }

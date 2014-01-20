@@ -113,33 +113,51 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			$time_used = $this->get_max_execution_time_usage( $execution_time );
 
 			if ( $memory_used > 90 || $time_used > 90 ) {
-				$this->settings['limit'] = floor( $this->settings['limit'] * 0.90 );
+				$this->settings['limit'] = $count - 1;
 				$cpk_wpcsv->set_settings( $this->settings );
+				$cpk_wpcsv->save_settings( );
+				if ( $time_used > 90 ) {
+					$this->log->add_message( __( "Hit 90% of maximum execution time!  Reducing chunk size to: {$this->settings['limit']}", 'wp-csv' ), 'Warning' );
+				}
+				if ( $memory_used > 90 ) {
+					$this->log->add_message( __( "Hit 90% of maximum memory!  Reducing chunk size to: {$this->settings['limit']}", 'wp-csv' ), 'Warning' );
+				}
 				return FALSE;
 			}
 
-			if ( $memory_used < 80 && $time_used < 80 && $this->settings['limit'] < 5000 ) {
+			$threshold = floor( $this->settings['limit'] * 0.9 );
+
+			if ( $memory_used < 90 && $time_used < 90 && ( $count > $threshold ) ) {
 				$this->settings['limit'] = floor( $this->settings['limit'] * 1.1 );
 				$cpk_wpcsv->set_settings( $this->settings );
+				$cpk_wpcsv->save_settings( );
 			}
 
 			return TRUE;
 		}
-
-		private function get_memory_usage( $memory_threshold = 90 ) {
-			$peak_memory = memory_get_peak_usage( TRUE );
-			$memory_limit = $this->return_bytes( ini_get( 'memory_limit' ) );
-			return ( $peak_memory / $memory_limit ) * 100;
+		
+		public function get_max_memory( ) {
+			return $this->return_bytes( ini_get( 'memory_limit' ) );
 		}
 
-		private function get_max_execution_time_usage( $execution_time ) {
+		public function get_max_execution_time( ) {
+			return ini_get( 'max_execution_time' );
+		}
+
+		public function get_memory_usage( $memory_threshold = 90 ) {
+			$peak_memory = memory_get_peak_usage( TRUE );
+			$memory_limit = $this->get_max_memory( );
+			return round( ( $peak_memory / $memory_limit ) * 100, 2 );
+		}
+
+		public function get_max_execution_time_usage( $execution_time ) {
 			if ( $execution_time == 0 ) return 0;
-			$max_execution_time = ini_get( 'max_execution_time' );
+			$max_execution_time = $this->get_max_execution_time( );
 			if ( !$max_execution_time ) $max_execution_time = 30;
 			return ( $execution_time / $max_execution_time ) * 100;
 		}
 
-		public function return_bytes( $val ) {
+		private function return_bytes( $val ) {
 			$val = trim( $val );
 			$last = strtolower( $val[strlen($val)-1] );
 			switch( $last ) {
@@ -165,7 +183,6 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 
 		public function import( $posts ) {
 
-			$this->log->empty_table( );
 			$start_time = time( );
 			$count = 0;
 			foreach( $posts as $post ) {
@@ -175,7 +192,6 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 				if ( !$this->optimize_resource_usage( $execution_time, $count ) ) break;
 			}
 
-			$this->log->store_messages( );
 			return $count;
 		}
 

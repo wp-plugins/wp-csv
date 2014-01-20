@@ -20,14 +20,15 @@ class CPK_WPCSV_Posts_Model {
 
 	public function get_post_ids( $post_type = NULL ) {
 		$sql = $this->build_query( 'ID,post_modified', $post_type );
-		$results = $this->db->get_results( $sql, ARRAY_A );
+		$results = mysql_query( $sql, $this->db->dbh );
 		
-		$post_ids = Array( );
-		if ( is_array( $results ) && !empty( $results ) ) {
-			foreach( $results as $result ) {
-				$post_ids[] = $result['ID'];
-			} # End foreach
-		} # End if
+		if ( $results ) {
+			$post_ids = Array( );
+			while ( $result = mysql_fetch_array( $results, MYSQL_ASSOC ) ) {
+				$post_ids[] = (int)$result['ID'];
+			} # End while
+			mysql_free_result( $results );
+		}
 
 		return $post_ids;
 	}

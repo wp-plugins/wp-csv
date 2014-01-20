@@ -21,38 +21,69 @@ jQuery( function( ) {
 				if ( percentage < 0 ) {
 					jQuery( '#progressbar' ).addClass( 'ui-widget-content' ).removeClass( 'stripes' );
 					jQuery( '#nothing-to-export' ).show( );
+					jQuery( '#export_wrapper' ).hide( );
+					jQuery( '#download_link' ).hide( );
 				} else if ( percentage < 100 ) {
 					jQuery( '#progressbar' ).progressbar( "value", percentage );
+					jQuery( '#percent' ).text( '(' + percentage + '%)' );
 					getProgress( data.position, data.percentagecomplete );
 				} else {
 					jQuery( '#progressbar' ).progressbar( "value", percentage );
+					jQuery( '#percent' ).text( '(' + percentage + '%)' );
 					jQuery( '#download_link' ).show( );
+					window.clearInterval( interval_id );
 				}
 			}
 		});
 	}
 
 	jQuery( '#start_export' ).on( 'click', function( ) {
+		interval_id = window.setInterval( function() {
+			$("#timer").timer();
+		}, 1000);
 		jQuery( '#export_wrapper' ).hide( );
 		jQuery( '#download_link' ).hide( );
 		jQuery( '#progressbar' ).progressbar( "value", 0 );
 		jQuery( '#progressbar' ).removeClass( 'ui-widget-content' ).addClass( 'stripes' );
 		getProgress( 0, 0 );
 	});
+	
+	String.prototype.toHHMMSS = function () {
+		var sec_num = parseInt(this, 10); // don't forget the second param
+		var hours   = Math.floor(sec_num / 3600);
+		var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+		var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+		if (hours   < 10) {hours   = "0"+hours;}
+		if (minutes < 10) {minutes = "0"+minutes;}
+		if (seconds < 10) {seconds = "0"+seconds;}
+		var time    = hours+':'+minutes+':'+seconds;
+		return time;
+	}
+
+	var seconds = 0;
+	var interval_id;
+
+	jQuery.fn.timer = function() {
+		seconds++;		
+		jQuery( this ).text( seconds.toString( ).toHHMMSS( ) );
+	} // timer function end
+		
 });
 
 </script>
 <table class='widefat'>
 <thead>
-<tr><th colspan='2'><strong>Export To CSV</strong></th></tr>
+<tr><th colspan='2'><strong><?php _e( 'Export To CSV', 'wp-csv' ); ?></strong></th></tr>
 </thead>
 <tbody>
-<tr><th>Progress</th><td><div id="progressbar_holder"><div id="progressbar"></div></div>
+<tr><th><?php _e( 'Progress', 'wp-csv' ); ?></th><td><div id="progressbar_holder"><div id="progressbar"></div></div><span id='percent'>(0%)</span>
 <div id="download_link">
-<a href='<?php echo $export_link; ?>'>Download CSV File</a>
+<a href='<?php echo $export_link; ?>'><?php _e( 'Download CSV File', 'wp-csv' ); ?></a>
 </div>
-<p id='nothing-to-export'>You seem to have nothing to export.  Add a post or page and try again.</p>
+<p id='nothing-to-export'><?php _e( 'You seem to have nothing to export.  Add a post or page and try again.', 'wp-csv' ); ?></p>
 </td></tr>
+<tr><th><?php _e( 'Elapsed Time', 'wp-csv' ); ?>:</th><td><p id="timer">00:00:00</p></td></tr>
 </tbody>
 </table>
 <br />
@@ -64,10 +95,10 @@ jQuery( function( ) {
 <br />
 <table class='widefat'>
 <thead>
-<tr><th colspan='2'><strong>Upload CSV File For Import</strong></th></tr>
+<tr><th colspan='2'><strong><?php _e( 'Upload CSV File For Import', 'wp-csv' ); ?></strong></th></tr>
 </thead>
 <tbody>
-<tr><th>Select CSV File</th><td>
+<tr><th><?php _e( 'Select CSV File', 'wp-csv' ); ?></th><td>
 <form enctype="multipart/form-data" action="" method="POST">
 <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $max_bits ?>" />
 <?php echo $nonce ?>

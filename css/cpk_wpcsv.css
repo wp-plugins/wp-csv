@@ -1,5 +1,6 @@
 div#wpcsv table th {
 	width: 17em;
+	vertical-align: top;
 }
 
 div#wpcsv div#cpk_wpcsv_left {
