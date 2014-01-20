@@ -56,8 +56,10 @@ class CPK_WPCSV_CSV {
 
 		$linecount = 0;
 		$handle = fopen( $file_path, "r" );
-		while( fgetcsv( $handle ) ) {
-			$linecount++;
+		while( $row = fgetcsv( $handle ) ) {
+			if ( is_array( $row ) && count( $row ) > 1 ) {
+				$linecount++;
+			}
 		}
 		fclose( $handle );
 		return $linecount + $offset; # Don't count CSV header row
@@ -88,7 +90,7 @@ class CPK_WPCSV_CSV {
 			while ( !$file->eof( ) ) {
 				if ( $count >= $limit ) break;
 				$row = $file->current( );
-				if ( !$file->eof( ) ) {
+				if ( is_array( $row ) && count( $row ) == count( $title_row ) ) {
 					$csv_data[] = array_combine( $title_row, $row );
 					$count++;
 				}

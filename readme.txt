@@ -2,9 +2,9 @@
 Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
-Requires at least: 3.3
+Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -12,6 +12,7 @@ A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, an
 Most WP features are fully supported:
 
 
+* More than 50000 lines can be imported/exported (the only limit is your server)
 * Posts, pages, and custom post types
 * Tags, categories, and custom taxonomies  
 * Custom fields (simple and complex)
@@ -19,7 +20,7 @@ Most WP features are fully supported:
 * Flexible filter system to easily control which fields export
 * Simple User Interface (if you know Excel or another spreadsheet program, you will find this plugin quite easy)
 
-The plugin should now be usable with Woo Commerce, eShop, and most other plugins that are fully Wordpress compliant.
+The plugin should now be usable with most plugins that are fully Wordpress compliant.
 
 Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a> and read the full documentation including a <a href='http://cpkwebsolutions.com/plugins/wp-csv/quick-start-guide/'>quick start guide</a> and a description of all the kinds of fields you'll see.
 
@@ -38,6 +39,11 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.5.2 = 
+* Testing of 50000+ records has been done, with some small optimizations.
+* Added report messages to give feedback about memory usage, etc.  
+* Plugin now ready to be internationalized (POT file in 'lang' sub-folder, please send me MO files in your language).
+* Several more minor enhancements and bug fixes, based on feedback.  
 = 1.5.1 =
 * Will now export posts with 'pending' status
 * Misc bugfixes and tidy up.
@@ -95,4 +101,7 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.5.1 - Now exports posts with 'pending' status. Several minor improvements and bugs fixed.
+1.5.2 
+* Imports and exports of 50000+ records have been tested and appear to work well.
+* Plugin has now been internationalized (language files in MO format welcome - see the lang subfolder).
+* Several minor enhancements and bug fixes, based on feedback. 

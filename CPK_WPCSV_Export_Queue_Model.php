@@ -53,15 +53,10 @@ class CPK_WPCSV_Export_Queue_Model {
 	}
 
 	public function add_post_ids( Array $post_ids ) {
-
 		array_walk( $post_ids, Array( $this, 'wrap_post_ids' ) );
-
 		$post_id_sql = implode( ',', $post_ids );
-
-		$sql =	"INSERT INTO {$this->table_name} ( `post_id` ) VALUES {$post_id_sql}";
-		
+		$sql = "INSERT INTO {$this->table_name} ( `post_id` ) VALUES {$post_id_sql}";
 		$this->db->query( $sql );
-
 	}
 
 	public function get_post_id_list( $limit = 100 ) {
