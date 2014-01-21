@@ -31,7 +31,7 @@ jQuery( function( ) {
 
 	jQuery( '#start_import' ).on( 'click', function( ) {
 		window.setInterval( function() {
-			$("#timer").timer();
+			jQuery("#timer").timer();
 		}, 1000);
 		
 		jQuery( '#import_wrapper' ).hide( );
