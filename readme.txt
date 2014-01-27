@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
 Tested up to: 3.8.1
-Stable tag: 1.5.4
+Stable tag: 1.5.5
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -39,6 +39,8 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.5.5 =
+* Fixed bug relating to export of custom post types.
 = 1.5.4 =
 * Fixed bug with import and export when the separator characters are different to defaults.
 * Fixed bug that was causing settings to be wiped under certain circumstances.
@@ -105,5 +107,7 @@ No screenshots available.
 * Initial upload
 
 == Upgrade Notice ==
+
+1.5.5 - Bug relating to export of custom post types fixed.
 
 1.5.4 - The bug with using separator characters other than '"' and ',' should now be fixed.  Error notification in the case of server errors has been slightly improved too.  Should be compatible with 3.8.1.
