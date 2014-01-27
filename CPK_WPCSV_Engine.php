@@ -15,6 +15,9 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			$this->export_model = new CPK_WPCSV_Export_Queue_Model( );
 			$this->posts_model = new CPK_WPCSV_Posts_Model( );
 			$this->csv = new CPK_WPCSV_CSV( );
+			$this->csv->delimiter = $this->settings['delimiter'];
+			$this->csv->enclosure = $this->settings['enclosure'];
+			$this->csv->encoding = $this->settings['encoding'];
 			$this->log = new CPK_WPCSV_Log_Model( );
 		}
 		
