@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.5.3
+Version: 1.5.4
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -96,7 +96,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.5.3';
+			$this->settings['version'] = '1.5.4';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -166,11 +166,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 		public function admin_pages( ) {
 
-			if ( $_POST['action'] == 'import' && $_FILES['uploadedfile']['name'] == '' ) {
-				$error = 'You must select a file to upload and import.';
-				$_POST['action'] = 'export';
-				$_REQUEST['action'] = 'export';
-			}
+			$view_name = $_REQUEST['action'];
 
 			if ( $_POST['action'] == 'export' ) {
 				$_POST['imagefolder'] = trim( $_POST['imagefolder'], '/ ' );
@@ -208,13 +204,16 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 				$this->save_settings();
 			}
+			
+			if ( $_POST['action'] == 'import' && $_FILES['uploadedfile']['name'] == '' ) {
+				$error = 'You must select a file to upload and import.';
+				$view_name = 'export';
+			}
 
 			$subdir = '/uploads';
 			$filename = self::EXPORT_FILE_NAME;
 
-			switch ( $_REQUEST['action'] ) {
-				case 'checkfailed':
-					$this->view->page( 'checkfailed', array( ) );
+			switch ( $view_name ) {
 				case 'import':
 					move_uploaded_file( $_FILES['uploadedfile']['tmp_name'], $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME );
 					$options['file_name'] = $_FILES['uploadedfile']['name'];
@@ -273,6 +272,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 		}
 		
 		public function process_export( ) {
+			
 			$start 	= isset( $_GET['start'] ) ? $_GET['start'] : 0;
 
 			$total = $this->wpcsv->get_total( );
@@ -298,15 +298,19 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			$file = $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME;
 			
 			$start = $_GET['start'];
+			
+			$this->csv->delimiter = $this->settings['delimiter'];
+
+			$this->csv->enclosure = $this->settings['enclosure'];
 
 			$total = ( $_GET['lines'] == 0 ) ? $this->csv->line_count( $file ) : $_GET['lines'];
-
+			
 			$rows = $this->csv->load( $file, $start, $this->settings['limit'] );
-
+			
 			$number_processed = $this->wpcsv->import( $rows );
 
 			$position = $start + $number_processed;
-
+			
 			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
 
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );

@@ -33,7 +33,19 @@ jQuery( function( ) {
 					jQuery( '#download_link' ).show( );
 					window.clearInterval( interval_id );
 				}
+			},
+			error: function( data ) {
+				alert( 'Export failed due to a server error.  Check the error log.' );
+				jQuery( '#export_wrapper' ).show( );
+				jQuery( '#download_link' ).hide( );
+				jQuery( '#progressbar' ).progressbar( "value", 0 );
+				jQuery( '#progressbar' ).addClass( 'ui-widget-content' ).removeClass( 'stripes' );
+				window.clearInterval( interval_id );
+				jQuery( '#timer' ).text( '00:00:00' );
+				jQuery( '#percent' ).text( '(0%)' );
+				return;
 			}
+
 		});
 	}
 

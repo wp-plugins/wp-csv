@@ -25,12 +25,21 @@ jQuery( function( ) {
 					jQuery( '#percent' ).text( '(' + percentage + '%)' );
 					location.search = '?page=wp-csv.php&action=report';
 				}
+			},
+			error: function( data ) {
+				alert( 'Import failed due to a server error.  Check the error log.' );
+				jQuery( '#import_wrapper' ).show( );
+				jQuery( '#progressbar' ).addClass( 'ui-widget-content' ).removeClass( 'stripes' );
+				window.clearInterval( interval_id );
+				jQuery( '#timer' ).text( '00:00:00' );
+				jQuery( '#percent' ).text( '(0%)' );
+				return;
 			}
 		});
 	}
 
 	jQuery( '#start_import' ).on( 'click', function( ) {
-		window.setInterval( function() {
+		interval_id = window.setInterval( function() {
 			jQuery("#timer").timer();
 		}, 1000);
 		
