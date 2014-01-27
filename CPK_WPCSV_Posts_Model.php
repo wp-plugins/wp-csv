@@ -21,7 +21,6 @@ class CPK_WPCSV_Posts_Model {
 	public function get_post_ids( $post_type = NULL ) {
 		$sql = $this->build_query( 'ID,post_modified', $post_type );
 		$results = mysql_query( $sql, $this->db->dbh );
-		
 		if ( $results ) {
 			$post_ids = Array( );
 			while ( $result = mysql_fetch_array( $results, MYSQL_ASSOC ) ) {
