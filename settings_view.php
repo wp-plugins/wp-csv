@@ -29,10 +29,11 @@
 <?php
 $post_types = get_post_types();
 $exclude_post_types = Array( 'attachment', 'revision', 'nav_menu_item', 'wp-types-group' );
-foreach ( $post_types as $post_type ) {
-	if ( !in_array( $post_type, $exclude_post_types ) ) {
-		$label = get_post_type_object( $post_type )->labels->name;
-		echo "<input type='radio' name='custom_post' value='{$post_type}'> {$label}<br />";
+foreach ( $post_types as $custom_post_type ) {
+	if ( !in_array( $custom_post_type, $exclude_post_types ) ) {
+		$label = get_post_type_object( $custom_post_type )->labels->name;
+		$checked = ( $post_type == $custom_post_type ) ? ' checked' : NULL;
+		echo "<input type='radio' name='custom_post' value='{$custom_post_type}'{$checked}> {$label}<br />";
 	}
 }
 ?></td></tr>

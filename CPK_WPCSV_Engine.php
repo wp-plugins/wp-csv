@@ -313,7 +313,13 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 					delete_post_meta( $id, '_thumbnail_id' );					
 				}
 
-				wp_publish_post( $id );
+				# Simulate the useful parts of wp_publish_post without changing post_status
+				clean_post_cache( $id );
+				$post_object = get_post( $id );
+				do_action( 'edit_post', $post_object->ID, $post_object );
+				do_action( "save_post_{$post_object->post_type}", $post_object->ID, $post_object, TRUE );
+				do_action( 'save_post', $post_object->ID, $post_object, TRUE );
+
 				$action['Insert'] = $id;
 			} else {
 				$pid = ( $p['ID'] < 0 ) ? $p['ID']*-1 : $p['ID'];
