@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
 Tested up to: 3.8.1
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -39,6 +39,8 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.5.6 =
+* Fixed bug relating to new posts always being 'published'.  Now you can set to 'draft' etc for newly created posts if you wish.
 = 1.5.5 =
 * Fixed bug relating to export of custom post types.
 = 1.5.4 =
@@ -107,6 +109,8 @@ No screenshots available.
 * Initial upload
 
 == Upgrade Notice ==
+
+1.5.6 - Fixed bug relating to new posts always being 'published'.  Now you can set to 'draft' etc for newly created posts if you wish.
 
 1.5.5 - Bug relating to export of custom post types fixed.
 
