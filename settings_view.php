@@ -11,7 +11,7 @@
 <tbody>
 <tr><th><?php _e( 'Delimiter', 'wp-csv' ); ?>:</th><td><input name="delimiter" type="text" length="1" value="<?php echo htmlentities($delimiter); ?>"/><span class='description'><strong> <?php _e( "(European users will usually need to change this from ',' to ';')", 'wp-csv' ); ?></strong><span/></td></tr>
 <tr><th><?php _e( 'Enclosure', 'wp-csv' ); ?>:</th><td><input name="enclosure" type="text" length="1" value="<?php echo htmlentities($enclosure); ?>"/><span class='description'></td></tr>
-<tr><th><?php _e( 'Date format', 'wp-csv' ); ?>:</th><td><select name="date_format"><option <?php if ($date_format == 'US' ) echo 'selected';?> value="US">US (MM/DD/YYYY)</option><option <?php if ($date_format == 'English' ) echo 'selected';?> value="English">English (DD/MM/YYYY)</option></select></td></tr>
+<tr><th><?php _e( 'Import Date format', 'wp-csv' ); ?>:</th><td><select name="date_format"><option <?php if ($date_format == 'US' ) echo 'selected';?> value="US">US (MM/DD/YYYY)</option><option <?php if ($date_format == 'English' ) echo 'selected';?> value="English">English (DD/MM/YYYY)</option></select><span class='description'><strong> <?php _e( "(Dates are always exported as 'YYYY-MM-DD HH:MM:SS')", 'wp-csv' ); ?></strong><span/></td></tr></td></tr>
 <tr><th><?php _e( 'Encoding', 'wp-csv' ); ?>:</th><td><select name="encoding">
 <option <?php if ($encoding == 'UTF-8' ) echo 'selected';?> value="UTF-8">UTF-8</option>
 <option <?php if ($encoding == 'UTF-8-BOM' ) echo 'selected';?> value="UTF-8-BOM">UTF-8 (with BOM)</option>
@@ -37,6 +37,19 @@ foreach ( $post_types as $custom_post_type ) {
 	}
 }
 ?></td></tr>
+<?php
+if ( current_user_can( 'manage_options' ) ):
+?>
+<tr><th><?php _e( 'Minimum Access Level', 'wp-csv' ); ?>:</th><td><select name="access_level">
+<option <?php if ($access_level == 'manage_options' ) echo 'selected';?> value="manage_options">Administrator</option>
+<option <?php if ($access_level == 'edit_pages' ) echo 'selected';?> value="edit_pages">Editor</option>
+<option <?php if ($access_level == 'publish_posts' ) echo 'selected';?> value="publish_posts">Author</option>
+<option <?php if ($access_level == 'edit_posts' ) echo 'selected';?> value="edit_posts">Contributor</option>
+<option <?php if ($access_level == 'read' ) echo 'selected';?> value="read">Subscriber</option>
+</select></td></tr>
+<?php
+endif;
+?>
 </tbody>
 </table>
 <p><input type="submit" value="<?php _e( 'Save and Go To Import/Export', 'wp-csv' ); ?>" /></p>
