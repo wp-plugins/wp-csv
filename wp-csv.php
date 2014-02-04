@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.5.6
+Version: 1.5.7
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -90,13 +90,14 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'post_type' => NULL,
 				'limit' => 3000,
 				'post_fields' => Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' ),
-				'mandatory_fields' => Array( 'ID', 'post_date', 'post_title' )
+				'mandatory_fields' => Array( 'ID', 'post_date', 'post_title' ),
+				'access_level' => 'administrator'
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.5.6';
+			$this->settings['version'] = '1.5.7';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -201,6 +202,8 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				
 				$this->settings['exclude_field_list'] =  preg_split( '/(,|\s)/', $_POST['exclude_field_list'] );
 				$this->settings['post_type'] = ( !empty( $_POST['custom_post'] ) ) ? $_POST['custom_post'] : NULL;
+				
+				$this->settings['access_level'] = ( !empty( $_POST['access_level'] ) ) ? $_POST['access_level'] : 'administrator';
 
 				$this->save_settings();
 			}
@@ -316,6 +319,16 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );
 			die( );
 		}
+		
+		public function cpk_wpcsv_admin_page( ) {
+			global $cpk_wpcsv;
+			if ( !isset( $cpk_wpcsv ) ) {
+				return;
+			}
+			if ( function_exists( 'add_submenu_page' ) ) {
+				add_submenu_page( 'tools.php', __( 'WP CSV' ), __( 'WP CSV' ), $this->settings['access_level'], basename(__FILE__), array( &$cpk_wpcsv, 'admin_pages' ) );
+			}
+		}	
 
 	}
 }
@@ -323,15 +336,6 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 // Instantiate
 
 if ( !function_exists( "cpk_wpcsv_admin_page" ) ) {
-	function cpk_wpcsv_admin_page( ) {
-		global $cpk_wpcsv;
-		if ( !isset( $cpk_wpcsv ) ) {
-			return;
-		}
-		if ( function_exists( 'add_submenu_page' ) ) {
-			add_submenu_page( 'tools.php', __( 'WP CSV' ), __( 'WP CSV' ), 'administrator', basename(__FILE__), array( &$cpk_wpcsv, 'admin_pages' ) );
-		}
-	}	
 }
 
 if ( !function_exists( "cpk_wpcsv_header" ) ) {
@@ -363,7 +367,7 @@ if ( class_exists( "CPK_WPCSV" ) ) {
 global $cpk_wpcsv;
 $cpk_wpcsv = new CPK_WPCSV( );
 
-add_action( 'admin_menu', 'cpk_wpcsv_admin_page' );
+add_action( 'admin_menu', Array( $cpk_wpcsv, 'cpk_wpcsv_admin_page' ) );
 add_action( 'admin_head', 'cpk_wpcsv_header' );
 add_filter( 'plugin_action_links', 'cpk_add_settings_link', 10, 2 );
 add_action( 'plugins_loaded', 'cpk_load_text_domain' );

@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
 Tested up to: 3.8.1
-Stable tag: 1.5.6
+Stable tag: 1.5.7
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -39,6 +39,9 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.5.7 =
+* Fixed bug with taxonomy import causing duplicates under some circumstances
+* Added dropdown to settings to make it possible for non-administrators to access
 = 1.5.6 =
 * Fixed bug relating to new posts always being 'published'.  Now you can set to 'draft' etc for newly created posts if you wish.
 = 1.5.5 =
@@ -110,8 +113,7 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.5.6 - Fixed bug relating to new posts always being 'published'.  Now you can set to 'draft' etc for newly created posts if you wish.
+1.5.7:
 
-1.5.5 - Bug relating to export of custom post types fixed.
-
-1.5.4 - The bug with using separator characters other than '"' and ',' should now be fixed.  Error notification in the case of server errors has been slightly improved too.  Should be compatible with 3.8.1.
+* Fixed bug where imports could sometimes create duplicate categories and tags.
+* Added ability to allow access to non-administrator users.

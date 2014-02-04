@@ -413,64 +413,6 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			return TRUE;
 		}
 
-		/*
-		
-		Function: get_cat_ids
-		 
-		Description: A comma separated string specifying each category to be created and/or associated with the post. ie
-		
-		1. 'one, two, three' will create categories of the same names and same slugs
-		2. 'one:slug1, two:slug2, three:slug3' will create categories with names one, two, three and slugs slug1, slug2, slug3
-		3. 'parent:parentslug, parentslug~child:childslug' will first create the parent category, and then attach a child category to it
-						
-		@param $csv_cats
-
-		*/
-
-		public function get_cat_ids( $csv_cats ) {
-		
-			$this->pwsd = FALSE;
-			
-			$cats = explode( ",", trim( $csv_cats, ',' ) );
-			
-			array_walk( $cats, create_function( '&$v, $k', '$v = trim($v);' ) );
-			foreach ( $cats as $c ) {
-	
-				if ( empty( $c ) ) continue;
-				$psplit = explode( '~', $c );
-	
-				if ( count( $psplit ) == 2 ) {
-					$cat_parent = get_term_by( 'slug', $psplit[0], 'category', ARRAY_A );
-					$cat_parent = $cat_parent['term_id']; // Needs to be the id for use in wp_insert_term below
-					$c = $psplit[1];
-				} else {
-					$cat_parent = 0; // No parent
-				}
-				$csplit = explode( ':', $c );
-				
-				if ( count( $csplit ) == 2 ) {
-					$cat_name = $csplit[0];
-					$cat_slug = $csplit[1];
-				} else {
-					$cat_slug = $csplit[0];
-					$cat_name = $csplit[0]; // Name and slug should be the same if slug isn't differentiated
-				}
-
-				$term = get_term_by( 'slug', $cat_slug, 'category', ARRAY_A );
-
-				if ( $term ) {
-					$cat_ids[] = (int)$term['term_id'];
-				} else { // new category
-					$new_term = wp_insert_term( $cat_name, 'category', array( 'slug' => $cat_slug, 'parent' => $cat_parent ) );
-					$cat_ids[] = (int)$new_term['term_id'];
-				}
-			}
-			
-			$this->pwsd = FALSE;
-			
-			return $cat_ids;
-		}
-
 		private function export_taxonomy( Array $items ) {
 
 			$output = Array( );
@@ -498,7 +440,13 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 				switch( count( $split ) ) {
 					case 1:
 						list( $name ) = $split;
-						$slug = $name;
+						$name_found = get_term_by( 'name', $name, $taxonomy );
+						if ( $name_found ) {
+							# We want 'Water' to just create one slug and then re-use, not one slug for every instance.
+							$slug = $name_found->slug;
+						} else {
+							$slug = $name;
+						}
 						$parent_id = 0;
 						break;
 					case 2:
