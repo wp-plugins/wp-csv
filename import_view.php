@@ -1,6 +1,6 @@
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
-<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="//code.jquery.com/jquery-1.9.1.js"></script>
+<script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 <script type="text/javascript">
 
 jQuery( function( ) {
@@ -15,6 +15,18 @@ jQuery( function( ) {
 			data: 'start=' + start + '&progress=' + retpercent + '&lines=' + lines,
 			dataType : 'json',
 			success: function( data ) {
+
+				if ( data.errors ) {
+					jQuery( '#import_wrapper' ).show( );
+					jQuery( '#progressbar' ).addClass( 'ui-widget-content' ).removeClass( 'stripes' );
+					window.clearInterval( interval_id );
+					jQuery( '#timer' ).text( '00:00:00' );
+					jQuery( '#percent' ).text( '(0%)' );
+
+					jQuery( '#error_list' ).append( '<tr><td>' + data.errors + '</td></tr>' );
+					jQuery( '#errors' ).show( );
+				}
+
 				var percentage = parseFloat( data.percentagecomplete );
 				if ( percentage < 100 ) {
 					jQuery( '#progressbar' ).progressbar( "value", percentage );
@@ -27,12 +39,7 @@ jQuery( function( ) {
 				}
 			},
 			error: function( data ) {
-				alert( 'Import failed due to a server error.  Check the error log.' );
-				jQuery( '#import_wrapper' ).show( );
-				jQuery( '#progressbar' ).addClass( 'ui-widget-content' ).removeClass( 'stripes' );
-				window.clearInterval( interval_id );
-				jQuery( '#timer' ).text( '00:00:00' );
-				jQuery( '#percent' ).text( '(0%)' );
+				alert( 'Import failed because the server did not return valid JSON data.  It could be that your server became unreachable during import.  There may be more information in your server error_log file.' );
 				return;
 			}
 		});

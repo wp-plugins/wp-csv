@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.5.7
+Version: 1.5.9
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -88,6 +88,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'include_field_list' => Array( '*' ),
 				'exclude_field_list' => Array( ),
 				'post_type' => NULL,
+				'post_status' => NULL,
 				'limit' => 3000,
 				'post_fields' => Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' ),
 				'mandatory_fields' => Array( 'ID', 'post_date', 'post_title' ),
@@ -97,7 +98,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.5.7';
+			$this->settings['version'] = '1.5.9';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -202,6 +203,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				
 				$this->settings['exclude_field_list'] =  preg_split( '/(,|\s)/', $_POST['exclude_field_list'] );
 				$this->settings['post_type'] = ( !empty( $_POST['custom_post'] ) ) ? $_POST['custom_post'] : NULL;
+				$this->settings['post_status'] = ( !empty( $_POST['post_status'] ) ) ? $_POST['post_status'] : NULL;
 				
 				$this->settings['access_level'] = ( !empty( $_POST['access_level'] ) ) ? $_POST['access_level'] : 'administrator';
 
@@ -256,6 +258,8 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$sql = "SELECT count(ID) FROM {$wpdb->posts} WHERE post_status IN ( 'publish', 'draft', 'future' )";
 					$options['total_rows'] = $wpdb->get_var( $sql );
 					$options['error'] =  $error;
+					$sql = "SELECT DISTINCT post_status FROM {$wpdb->posts}";
+					$options['post_status_list'] = array_unique( array_merge( $wpdb->get_col( $sql ), Array( 'publish', 'draft', 'future', 'private', 'trash' ) ) );
 					$this->view->page( 'settings', $options );
 			}
 		}
@@ -292,7 +296,15 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			$position = $start + $number_processed;
 			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
 
-			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage ) );
+			$errors = ob_get_clean( );
+
+			if ( $errors ) {
+				$this->log->add_message( $errors, 'Error' );
+				$this->log->store_messages( );
+				ob_clean( ); # Run again to ensure no extra output was created
+			}
+
+			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'errors' => $errors ) );
 			die( );
 		}
 		
@@ -315,6 +327,14 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			$position = $start + $number_processed;
 			
 			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
+
+			$errors = ob_get_clean( );
+
+			if ( $errors ) {
+				$this->log->add_message( 'Error Message', 'Error', $errors );
+				$this->log->store_messages( );
+				ob_clean( ); # Run again to ensure no extra output was created
+			}
 
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );
 			die( );

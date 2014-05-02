@@ -124,3 +124,12 @@ div#wpcsv input#start_export {
 	text-align: left;
 }
 
+div#wpcsv div#errors {
+	display: none;
+}
+
+div#wpcsv div#progressbar ui-widget-header {
+	background: none;
+	background-color: #0074F8;
+	border-color: #0074F8;
+}
