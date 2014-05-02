@@ -17,7 +17,11 @@ if ( is_array( $error_messages ) && !empty( $error_messages ) ) {
 	$error_html = "<table class='widefat'><thead><tr><th>{$message_heading}</th></tr></thead><tbody>";
 
 	foreach( $error_messages as $message ) {
-		$error_html .= "<tr><td>{$message->msg}</td></tr>";
+		if ( empty( $message->data ) ) {
+			$error_html .= "<tr><td>{$message->msg}</td></tr>";
+		} else {
+			$error_html .= "<tr><td>{$message->data}</td></tr>";
+		}
 	} # End foreach
 	$error_html .= "</tbody></table>";
 }
@@ -27,7 +31,11 @@ if ( is_array( $warning_messages ) && !empty( $warning_messages ) ) {
 	$warning_html = "<table class='widefat'><thead><tr><th>{$message_heading}</th></tr></thead><tbody>";
 
 	foreach( $warning_messages as $message ) {
-		$warning_html .= "<tr><td>{$message->msg}</td></tr>";
+		if ( empty( $message->data ) ) {
+			$warning_html .= "<tr><td>{$message->msg}</td></tr>";
+		} else {
+			$warning_html .= "<tr><td>{$message->data}</td></tr>";
+		}
 	} # End foreach
 	$warning_html .= "</tbody></table>";
 }

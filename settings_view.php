@@ -37,6 +37,17 @@ foreach ( $post_types as $custom_post_type ) {
 	}
 }
 ?></td></tr>
+<tr><th><?php _e( 'Post Status Filter', 'wp-csv' ); ?>:</th><td>
+<select name="post_status">
+<?php
+echo "<option value=''>All (No Filtering)</option>";
+foreach ( $post_status_list as $status ) {
+	$selected = ( $status == $post_status ) ? ' selected' : '';
+	if ( !in_array( $status, Array( 'auto-draft', 'inherit', 'trash' ) ) ) { # Exclude these for now
+		echo "<option value='{$status}'{$selected}>{$status}</option>";
+	}
+}
+?></select></td></tr>
 <?php
 if ( current_user_can( 'manage_options' ) ):
 ?>

@@ -3,8 +3,8 @@ Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
 Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
-Tested up to: 3.8.1
-Stable tag: 1.5.7
+Tested up to: 3.9
+Stable tag: 1.5.9
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -19,12 +19,15 @@ Most WP features are fully supported:
 * Thumbnails
 * Flexible filter system to easily control which fields export
 * Simple User Interface (if you know Excel or another spreadsheet program, you will find this plugin quite easy)
-
 The plugin should now be usable with most plugins that are fully Wordpress compliant.
 
 Learn more <a href='http://cpkwebsolutions.com/wp-csv'>here</a> and read the full documentation including a <a href='http://cpkwebsolutions.com/plugins/wp-csv/quick-start-guide/'>quick start guide</a> and a description of all the kinds of fields you'll see.
 
-We welcome your feedback and feature requests.  Please also remember to <a href='http://cpkwebsolutions.com/donate'>support</a> the plugin.  A lot of time and effort goes into maintaining it!
+SUPPORT
+
+We no longer provide any free support for the following <a href='http://cpkwebsolutions.com/plugins/wp-csv/support-and-donations'>reasons</a>.
+
+If you see value in the plugin, <a href='http://cpkwebsolutions.com/donate'>support</a> it!
 
 == Installation ==
 
@@ -39,6 +42,12 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.5.9 =
+* Added post status filter (sponsored feature addition)
+* Fixed an incompatibility bug reported for WP 3.9
+* Protocol independent urls for better compatibility when served over HTTPS
+= 1.5.8 =
+* Enhancement: URL decode taxonomy items before import/export.
 = 1.5.7 =
 * Fixed bug with taxonomy import causing duplicates under some circumstances
 * Added dropdown to settings to make it possible for non-administrators to access
@@ -113,7 +122,8 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-1.5.7:
+1.5.9:
 
-* Fixed bug where imports could sometimes create duplicate categories and tags.
-* Added ability to allow access to non-administrator users.
+* Sponsored Enhancement: Added post status filter for export.
+* Minor bugfix based on report from end-user regarding WP 3.9 compatibility.
+* Protocol independent urls for users running the WP backend over HTTPS
