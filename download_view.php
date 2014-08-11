@@ -1,4 +1,12 @@
 <?php
+
+# Prevent unauthorized access
+if ( !function_exists( 'is_user_logged_in' ) ) exit;
+if ( !is_user_logged_in( ) ) exit;
+$current_user = wp_get_current_user( );
+$options = get_option( '_pws_wpcsv_settings' );
+if ( !current_user_can( $options['access_level'] ) ) exit;
+
 if ( isset( $_GET['file'] ) ) {
 	extract( $_GET );
 	$file = strtolower( $file );
