@@ -275,7 +275,6 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 					}
 				}
 
-
 				// Add thumbnail if one can be found
 				if ( !empty( $thumb_file ) ) { // Ignore blank thumb_file fields
 

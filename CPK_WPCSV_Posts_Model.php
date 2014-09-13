@@ -74,7 +74,6 @@ class CPK_WPCSV_Posts_Model {
 			}
 			$custom_field_values[] = $val;
 		}
-		
 		return $custom_field_values;
 	}
 

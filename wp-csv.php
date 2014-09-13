@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.6.0
+Version: 1.6.1
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -89,7 +89,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'exclude_field_list' => Array( ),
 				'post_type' => NULL,
 				'post_status' => NULL,
-				'limit' => 3000,
+				'limit' => 1000,
 				'post_fields' => Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' ),
 				'mandatory_fields' => Array( 'ID', 'post_date', 'post_title' ),
 				'access_level' => 'administrator'
@@ -98,7 +98,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.6.0';
+			$this->settings['version'] = '1.6.1';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -133,26 +133,44 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			return ( is_dir( $path ) && is_writable( $path ) );
 		}
 
+		public function file_writable( $path ) {
+			if ( $this->folder_writable( $path ) ) {
+				$success = file_put_contents( "{$path}/.wpcsv-test", 'Just a test file.  Delete this file if you read this.' );
+			}
+
+			if ( $success ) {
+				unlink( "{$path}/.wpcsv-test" );
+				return TRUE;
+			}
+			
+		}
+
 		public function add_htaccess( $path ) {
 			if ( $this->folder_writable( $path ) ) {
 				return file_put_contents( "{$path}/.htaccess", 'Deny from all' );
 			}
 		}
 
-		public function get_csv_folder( ) {
+		public function get_paths( $sub_folder = '' ) {
 
-			$wp_csv_folder = '/wpcsv_backups';
+			$uploads_dir = wp_upload_dir( );
 
 			# In order of preference
-			$paths = Array( 
-				sys_get_temp_dir( ),
-				ABSPATH,
-				WP_CONTENT_DIR,
-				WP_CONTENT_DIR . '/uploads'
+			return Array( 
+				sys_get_temp_dir( ) . '/' . $sub_folder,
+				ABSPATH . $sub_folder,
+				WP_CONTENT_DIR . '/' . $sub_folder,
+				$uploads_dir['basedir'] . '/' . $sub_folder
 			);
+		}
+
+		public function get_csv_folder( ) {
+
+			$chosen_folder = '';
+
+			$paths = $this->get_paths( 'wpcsv_backups' );
 
 			foreach( $paths as $p ) {
-				$p .= $wp_csv_folder;
 				if ( ( !file_exists( $p ) && mkdir( $p, 0755 ) ) || $this->folder_writable( $p ) ) {
 					$chosen_folder = $p;
 					break;
@@ -182,15 +200,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				}
 				$this->settings['date_format'] = $_POST['date_format'];
 				$this->settings['encoding'] = $_POST['encoding'];
-				if ( $this->folder_writable( $_POST['csv_path'] ) ) {
-					$this->settings['csv_path'] = $_POST['csv_path'];
-				} else {
-					$this->settings['csv_path'] = $this->get_csv_folder( );
-					if ( !$this->settings['csv_path'] ) {
-						$_POST['action'] = 'settings';
-						$error = __( "ERROR - Unable to find a folder to store your CSV files in.  Please refer to the <a href='http://cpkwebsolutions.com/plugins/wp-csv/faq'>FAQ</a> for a solution.", 'wp-csv' );
-					}
-				}
+
 				$this->settings['delimiter'] = substr( stripslashes( $_POST['delimiter'] ), 0, 1 );
 				$this->settings['enclosure'] = substr( stripslashes( $_POST['enclosure'] ), 0, 1 );
 
@@ -206,6 +216,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				$this->settings['post_status'] = ( !empty( $_POST['post_status'] ) ) ? $_POST['post_status'] : NULL;
 				
 				$this->settings['access_level'] = ( !empty( $_POST['access_level'] ) ) ? $_POST['access_level'] : 'administrator';
+				$this->settings['limit'] = 1000;
 
 				$this->save_settings();
 			}
@@ -262,6 +273,35 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$options['post_status_list'] = array_unique( array_merge( $wpdb->get_col( $sql ), Array( 'publish', 'draft', 'future', 'private', 'trash' ) ) );
 					$this->view->page( 'settings', $options );
 			}
+		}
+
+		public function file_permissions_problem( ) {
+			if ( !$this->folder_writable( $this->settings['csv_path'] ) ) return TRUE;
+			if ( !$this->file_writable( $this->settings['csv_path'] ) ) return TRUE;
+		}
+
+		public function display_notices() {
+
+			if ( !$this->folder_writable( $this->settings['csv_path'] ) || !$this->file_writable( $this->settings['csv_path'] ) ) {
+				$this->settings['csv_path'] = $this->get_csv_folder( );
+				$this->save_settings( );
+			}
+
+			if ( $this->file_permissions_problem( ) && $_GET['page'] == 'wp-csv.php' ) {
+				$paths = $this->get_paths( );
+
+				$path_html = '';
+				if ( is_array( $paths ) && !empty( $paths ) ) {
+					foreach( $paths as $path ) {
+						$path_html .= "<li>{$path}</li>";
+					} # End foreach
+				} # End if
+				$html = "<div class='error'>
+				<h4>WP CSV</h4><p>There is a problem with the file permissions on your server.  For the following locations, WP CSV was unable to create the 'wpcsv_backups' folder and/or unable to create a new file within that folder:</p><blockquote><ul>$path_html</ul></blockquote><p>These locations are listed in order of preference (from most secure to least secure, although precautions are taken to protect your data when the files are publicly accessible).</p>
+				</div>";
+				echo $html;
+			}
+			
 		}
 
 		public function save_settings( ) {
@@ -391,5 +431,5 @@ add_action( 'admin_menu', Array( $cpk_wpcsv, 'cpk_wpcsv_admin_page' ) );
 add_action( 'admin_head', 'cpk_wpcsv_header' );
 add_filter( 'plugin_action_links', 'cpk_add_settings_link', 10, 2 );
 add_action( 'plugins_loaded', 'cpk_load_text_domain' );
-
+add_action( 'admin_notices', Array( $cpk_wpcsv, 'display_notices' ) );
 }
