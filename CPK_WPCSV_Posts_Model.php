@@ -21,13 +21,10 @@ class CPK_WPCSV_Posts_Model {
 
 	public function get_post_ids( $post_type = NULL, $post_status = NULL ) {
 		$sql = $this->build_query( 'ID,post_modified', $post_type, $post_status );
-		
 		$post_ids = Array( );
 		
 		if ( function_exists( 'mysqli_connect' ) ) {
-			error_log( 'host: ' . DB_HOST );
-			$link = mysqli_connect( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
-			$results = mysqli_query( $link, $sql );
+			$results = mysqli_query( $this->db->dbh, $sql );
 			if ( $results ) {
 				while ( $result = mysqli_fetch_array( $results, MYSQL_ASSOC ) ) {
 					$post_ids[] = (int)$result['ID'];
