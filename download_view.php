@@ -7,21 +7,6 @@ $current_user = wp_get_current_user( );
 $options = get_option( '_pws_wpcsv_settings' );
 if ( !current_user_can( $options['access_level'] ) ) exit;
 
-if ( isset( $_GET['file'] ) ) {
-	extract( $_GET );
-	$file = strtolower( $file );
-	$path = $csv_path . '/' . $file;
-	$csv_check = substr( $file, -4 ); # Make sure it's a csv file for security
-	if ( file_exists( $path ) && $csv_check == '.csv' ) {
-		ob_end_clean( );
-		cpkws_wpcsv_downloadFile( $path, $enc );
-		die( );
-	} else {
-		wp_redirect( site_url( ) . '/wp-admin/tools.php?page=wpcsv.php&action=export' );
-		die( );
-	}
-}
-
 if ( !function_exists( 'cpkws_wpcsv_downloadFile' ) ) {
 function cpkws_wpcsv_downloadFile( $fullPath, $encoding ){
 
@@ -39,7 +24,8 @@ function cpkws_wpcsv_downloadFile( $fullPath, $encoding ){
 	// File Exists?
 	if ( file_exists( $fullPath ) ) {
 		
-		ob_clean( );
+		$status = ob_get_status( );
+		if ( !empty( $status ) ) ob_clean( ); # Run again to ensure no extra output was created
 
 		# Encoding combos:
 		#
@@ -94,3 +80,19 @@ function cpkws_wpcsv_downloadFile( $fullPath, $encoding ){
 }
 
 }
+
+if ( isset( $_GET['file'] ) ) {
+	extract( $_GET );
+	$file = strtolower( $file );
+	$path = $csv_path . '/' . $file;
+	$csv_check = substr( $file, -4 ); # Make sure it's a csv file for security
+	if ( file_exists( $path ) && $csv_check == '.csv' ) {
+		ob_end_clean( );
+		cpkws_wpcsv_downloadFile( $path, $enc );
+		die( );
+	} else {
+		wp_redirect( site_url( ) . '/wp-admin/tools.php?page=wpcsv.php&action=export' );
+		die( );
+	}
+}
+

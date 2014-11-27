@@ -63,12 +63,31 @@ class CPK_WPCSV_Log_Model {
 		if ( empty( $this->messages ) ) return;
 		if ( is_array( $this->messages ) && !empty( $this->messages ) ) {
 			$date = date( 'Y-m-d H:i:s', current_time( 'timestamp' ) );
-			foreach( $this->messages as $message ) {
-				extract( $message );
-				$msg = mysqli_real_escape_string( $this->db->dbh, $msg );
-				$data = mysqli_real_escape_string( $this->db->dbh, $data );
-				$values[] = "( '{$msg}', '{$category}', '{$data}', '{$date}' )";	
-			} # End foreach
+
+			if ( function_exists( 'mysqli_connect' ) ) {
+				$host_parts = explode( ':', DB_HOST );
+				if ( count( $host_parts ) == 2 ) {
+					list( $db_host, $db_port ) = $host_parts;
+				} else {
+					$db_host = $host_parts[0];
+					$db_port = '3306';
+				}
+				$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, $db_port );
+				foreach( $this->messages as $message ) {
+					extract( $message );
+					$msg = mysqli_real_escape_string( $link, $msg );
+					$data = mysqli_real_escape_string( $link, $data );
+					$values[] = "( '{$msg}', '{$category}', '{$data}', '{$date}' )";	
+				} # End foreach
+			} else {
+				foreach( $this->messages as $message ) {
+					extract( $message );
+					$msg = mysql_real_escape_string( $msg, $this->db->dbh );
+					$data = mysql_real_escape_string( $data, $this->db->dbh );
+					$values[] = "( '{$msg}', '{$category}', '{$data}', '{$date}' )";	
+				} # End foreach
+			}
+
 		} # End if
 
 		$values_sql = implode( ',', $values );
