@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.6.4
+Version: 1.6.5
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -98,7 +98,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.6.4';
+			$this->settings['version'] = '1.6.5';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -353,7 +353,8 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			if ( $errors ) {
 				$this->log->add_message( $errors, 'Error' );
 				$this->log->store_messages( );
-				ob_clean( ); # Run again to ensure no extra output was created
+				$status = ob_get_status( );
+				if ( !empty( $status ) ) ob_clean( ); # Run again to ensure no extra output was created
 			}
 
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'errors' => $errors ) );
@@ -385,7 +386,8 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			if ( $errors ) {
 				$this->log->add_message( 'Error Message', 'Error', $errors );
 				$this->log->store_messages( );
-				ob_clean( ); # Run again to ensure no extra output was created
+				$status = ob_get_status( );
+				if ( !empty( $status ) ) ob_clean( ); # Run again to ensure no extra output was created
 			}
 
 			echo json_encode( Array( 'position' => $position, 'percentagecomplete' => $ret_percentage, 'lines' => $total ) );

@@ -24,8 +24,13 @@ class CPK_WPCSV_Posts_Model {
 		$post_ids = Array( );
 		
 		if ( function_exists( 'mysqli_connect' ) ) {
-			list( $db_host, $db_port ) = explode( ':', DB_HOST );
-			if ( empty( $db_port ) ) $db_port = '3306';
+			$host_parts = explode( ':', DB_HOST );
+			if ( count( $host_parts ) == 2 ) {
+				list( $db_host, $db_port ) = $host_parts;
+			} else {
+				$db_host = $host_parts[0];
+				$db_port = '3306';
+			}
 			$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, $db_port );
 			$results = mysqli_query( $link, $sql );
 			if ( $results ) {

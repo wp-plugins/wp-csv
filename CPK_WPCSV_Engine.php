@@ -5,6 +5,7 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 		private $post_fields = Array( );
 		private $stats = Array( );
 		private $export_model;
+		private $row_index = 0;
 
 		const EXPORT_FILE_NAME = 'wpcsv-export';
 
