@@ -113,7 +113,7 @@ jQuery( function( ) {
 <tr><th><?php _e( 'Select CSV File', 'wp-csv' ); ?></th><td>
 <form enctype="multipart/form-data" action="" method="POST">
 <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $max_bits ?>" />
-<?php echo $nonce ?>
+<?php if ( isset( $nonce ) ) echo $nonce ?>
 <input type="hidden" name="action" value="import" />
 <input name="uploadedfile" type="file" />
 </fieldset>

@@ -65,8 +65,8 @@ class CPK_WPCSV_Log_Model {
 			$date = date( 'Y-m-d H:i:s', current_time( 'timestamp' ) );
 			foreach( $this->messages as $message ) {
 				extract( $message );
-				$msg = mysql_real_escape_string( $msg );
-				$data = mysql_real_escape_string( $data );
+				$msg = mysqli_real_escape_string( $this->db->dbh, $msg );
+				$data = mysqli_real_escape_string( $this->db->dbh, $data );
 				$values[] = "( '{$msg}', '{$category}', '{$data}', '{$date}' )";	
 			} # End foreach
 		} # End if
