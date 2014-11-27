@@ -14,7 +14,7 @@ if ( isset( $_GET['file'] ) ) {
 	$csv_check = substr( $file, -4 ); # Make sure it's a csv file for security
 	if ( file_exists( $path ) && $csv_check == '.csv' ) {
 		ob_end_clean( );
-		downloadFile( $path, $enc );
+		cpkws_wpcsv_downloadFile( $path, $enc );
 		die( );
 	} else {
 		wp_redirect( site_url( ) . '/wp-admin/tools.php?page=wpcsv.php&action=export' );
@@ -22,7 +22,8 @@ if ( isset( $_GET['file'] ) ) {
 	}
 }
 
-function downloadFile( $fullPath, $encoding ){
+if ( !function_exists( 'cpkws_wpcsv_downloadFile' ) ) {
+function cpkws_wpcsv_downloadFile( $fullPath, $encoding ){
 
 	// Must be fresh start
 	if( headers_sent() )
@@ -48,12 +49,6 @@ function downloadFile( $fullPath, $encoding ){
 		#
 
 		switch ( $encoding ) {
-			case 'UTF-16LE':
-				$bom = "\xFF\xFE";
-				break;
-			case 'UTF-16BE':
-				$bom = "\xFE\xFF";
-				break;
 			case 'UTF-8':
 				$bom = '';
 				break;
@@ -65,26 +60,17 @@ function downloadFile( $fullPath, $encoding ){
 				$bom = '';
 		}	
 		
-		iconv_set_encoding( 'output_encoding', $encoding );
+		if ( PHP_VERSION_ID < 50600 ) {
+			iconv_set_encoding( 'output_encoding', $encoding );
+		}
 
 		// Parse Info / Get Extension
 		$fsize = filesize( $fullPath );
 		$path_parts = pathinfo( $fullPath );
 		$ext = strtolower( $path_parts['extension'] );
 		 
-		// Determine Content Type
 		switch ( $ext ) {
 			case "csv": $ctype="application/octet-stream"; break;
-			case "pdf": $ctype="application/pdf"; break;
-			case "exe": $ctype="application/octet-stream"; break;
-			case "zip": $ctype="application/zip"; break;
-			case "doc": $ctype="application/msword"; break;
-			case "xls": $ctype="application/vnd.ms-excel"; break;
-			case "ppt": $ctype="application/vnd.ms-powerpoint"; break;
-			case "gif": $ctype="image/gif"; break;
-			case "png": $ctype="image/png"; break;
-			case "jpeg":
-			case "jpg": $ctype="image/jpg"; break;
 			default: $ctype="application/force-download";
 		}
 
@@ -105,4 +91,6 @@ function downloadFile( $fullPath, $encoding ){
 	} else {
 		die('File Not Found');
 	}
+}
+
 }

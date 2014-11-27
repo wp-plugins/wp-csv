@@ -1,6 +1,6 @@
 <form method='post'>
 <input type='hidden' name='action' value='export'/>
-<?php echo $nonce ?>
+<?php if ( isset( $nonce ) ) echo $nonce ?>
 <p><strong><?php _e( 'First Time Users', 'wp-csv' ); ?>:</strong> Read the <a href='http://cpkwebsolutions.com/plugins/wp-csv/quick-start-guide'>Quick Start Guide</a>.</p>
 <p><input type="submit" value="<?php _e( 'Save and Go To Import/Export', 'wp-csv' ); ?>" /></p>
 <strong class='red'><?php echo $error;?></strong>

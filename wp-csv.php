@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.6.3
+Version: 1.6.4
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -98,7 +98,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.6.3';
+			$this->settings['version'] = '1.6.4';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -186,10 +186,20 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 		public function admin_pages( ) {
 
-			$view_name = $_REQUEST['action'];
+			$view_name = '';
+			$error = NULL;
+			$imagefolder = NULL;
+			if ( isset( $_REQUEST['action'] ) ) {
+				$view_name = $_REQUEST['action'];
+			}
 
-			if ( $_POST['action'] == 'export' ) {
-				$_POST['imagefolder'] = trim( $_POST['imagefolder'], '/ ' );
+			if ( isset( $_POST['action'] ) && $_POST['action'] == 'export' ) {
+				if ( isset( $_POST['imagefolder'] ) ) {
+					$_POST['imagefolder'] = trim( $_POST['imagefolder'], '/ ' );
+				} else {
+					$_POST['imagefolder'] = '';
+				}
+
 				$imagefolder = WP_CONTENT_DIR . '/uploads/' . $_POST['imagefolder'];
 				if ( is_dir( $imagefolder ) ) {
 					$this->settings['imagefolder'] = $_POST['imagefolder'];
@@ -215,13 +225,15 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				$this->settings['post_type'] = ( !empty( $_POST['custom_post'] ) ) ? $_POST['custom_post'] : NULL;
 				$this->settings['post_status'] = ( !empty( $_POST['post_status'] ) ) ? $_POST['post_status'] : NULL;
 				
-				$this->settings['access_level'] = ( !empty( $_POST['access_level'] ) ) ? $_POST['access_level'] : 'administrator';
+				if ( !empty( $_POST['access_level'] ) ) $this->settings['access_level'] = $_POST['access_level'];
+				if ( empty( $this->settings['access_level'] ) ) $this->settings['access_level'] = 'administrator';
+
 				$this->settings['limit'] = 1000;
 
 				$this->save_settings();
 			}
 			
-			if ( $_POST['action'] == 'import' && $_FILES['uploadedfile']['name'] == '' ) {
+			if ( isset( $_POST['action'] ) && $_POST['action'] == 'import' && $_FILES['uploadedfile']['name'] == '' ) {
 				$error = 'You must select a file to upload and import.';
 				$view_name = 'export';
 			}
