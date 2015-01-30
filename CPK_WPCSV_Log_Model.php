@@ -70,9 +70,9 @@ class CPK_WPCSV_Log_Model {
 					list( $db_host, $db_port ) = $host_parts;
 				} else {
 					$db_host = $host_parts[0];
-					$db_port = '3306';
+					$db_port = 3306;
 				}
-				$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, $db_port );
+				$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, (int)$db_port );
 				foreach( $this->messages as $message ) {
 					extract( $message );
 					$msg = mysqli_real_escape_string( $link, $msg );
