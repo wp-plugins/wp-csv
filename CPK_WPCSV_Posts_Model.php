@@ -22,19 +22,21 @@ class CPK_WPCSV_Posts_Model {
 	public function get_post_ids( $post_type = NULL, $post_status = NULL ) {
 		$sql = $this->build_query( 'ID,post_modified', $post_type, $post_status );
 		$post_ids = Array( );
-		
+
+		# $wpdb uses far too much memory so bypassing...
+
 		if ( function_exists( 'mysqli_connect' ) ) {
 			$host_parts = explode( ':', DB_HOST );
 			if ( count( $host_parts ) == 2 ) {
 				list( $db_host, $db_port ) = $host_parts;
 			} else {
 				$db_host = $host_parts[0];
-				$db_port = '3306';
+				$db_port = 3306;
 			}
-			$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, $db_port );
+			$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, (int)$db_port );
 			$results = mysqli_query( $link, $sql );
 			if ( $results ) {
-				while ( $result = mysqli_fetch_array( $results, MYSQL_ASSOC ) ) {
+				while ( $result = mysqli_fetch_array( $results, MYSQLI_ASSOC ) ) {
 					$post_ids[] = (int)$result['ID'];
 				} # End while
 			}
