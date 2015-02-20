@@ -86,7 +86,7 @@ if ( isset( $_GET['file'] ) ) {
 	$file = strtolower( $file );
 	$path = $csv_path . '/' . $file;
 	$csv_check = substr( $file, -4 ); # Make sure it's a csv file for security
-	if ( file_exists( $path ) && $csv_check == '.csv' ) {
+	if ( file_exists( $path ) && ( $csv_check == '.csv' || $file == 'wpcsv-debug.log' ) ) {
 		ob_end_clean( );
 		cpkws_wpcsv_downloadFile( $path, $enc );
 		die( );

@@ -1,9 +1,9 @@
 === WP CSV ===
 Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
-Tags: csv, import, export, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
+Tags: wp, csv, import, export, excel, taxonomy, tag, category, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
-Tested up to: 4.1
+Tested up to: 4.1.1
 Stable tag: 1.6.6
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
@@ -42,6 +42,11 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.7.0 =
+* Added a debug setting to trace export operations (import to be added in future)
+* Overhaul of export code to improve handling of fields with the same name (ie a custom field called 'post_title')
+* All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
+* Modified import to allow import of the new prefixed field names
 = 1.6.6 =
 * Minor bug fixes related to the 'no posts found' problem.  (Thank you napcok and mcdorf!)
 = 1.6.5 =
@@ -142,5 +147,8 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-= 1.6.6 =
-* Minor bug fixes related to the 'no posts found' problem.  (Thank you napcok and mcdorf!)
+= 1.7.0 =
+* Added a debug setting to trace export operations (import to be added in future)
+* Overhaul of export code to improve handling of fields with the same name (ie a custom field called 'post_title')
+* All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
+* Modified import to allow import of the new prefixed field names
