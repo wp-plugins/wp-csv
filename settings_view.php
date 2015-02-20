@@ -61,6 +61,11 @@ if ( current_user_can( 'manage_options' ) ):
 <?php
 endif;
 ?>
+<?php 
+	$debug_checked = ( htmlentities( $debug ) ) ? 'checked ' : '';
+?>
+<tr><th><?php _e( "Debug Active", 'wp-csv' ); ?>:</th><td><input name="debug" type="checkbox" <?php echo $debug_checked; ?>/>
+<blockquote><i><?php _e( "This may cause extra load and create quite a large trace file.  Only turn on if there's a problem. NOTE: Currently only traces export.", 'wp-csv' ); ?></i></blockquote></td></tr>
 </tbody>
 </table>
 <p><input type="submit" value="<?php _e( 'Save and Go To Import/Export', 'wp-csv' ); ?>" /></p>

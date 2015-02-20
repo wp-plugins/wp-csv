@@ -5,10 +5,24 @@ if ( !class_exists( 'CPK_WPCSV_Posts_Model' ) ) {
 class CPK_WPCSV_Posts_Model {
 
 	private $db;
+	private $debugger = NULL;
 
 	public function __construct( ) {
 		global $wpdb;
 		$this->db = $wpdb;
+		
+	}
+
+	public function set_debugger( $debugger ) {
+		if ( is_object( $debugger ) ) {
+			$this->debugger = $debugger;
+		}
+	}
+
+	private function trace( $label, $data ) {
+		if ( is_object( $this->debugger ) && method_exists( $this->debugger, 'add' ) ) {
+			$this->debugger->add( $label, $data );
+		}
 	}
 
 	private function build_query( $fields, $post_type, $post_status, $post_id_list = NULL ) {
@@ -16,6 +30,9 @@ class CPK_WPCSV_Posts_Model {
 		$post_status_filter = ( $post_status ) ?  "AND post_status = '{$post_status}'" : '';
 		$post_id_filter = ( isset( $post_id_list ) ) ? "AND ID IN ( " . implode( ',', $post_id_list ) . " )" : '';
 		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE post_status in ('publish','future','private','draft', 'pending') {$post_type_filter} {$post_id_filter} {$post_status_filter} ORDER BY post_modified DESC";
+
+		$this->trace( 'Post Query', $sql );
+
 		return $sql;
 	}
 
@@ -52,6 +69,190 @@ class CPK_WPCSV_Posts_Model {
 		return $post_ids;
 	}
 
+	public function get_post( $post_id, $settings ) {
+
+		$headings = Array( );
+		$values = Array( );
+
+		# WP Posts fields
+		$result = $this->get_posts( $this->remove_prefix( 'wp_', $settings['post_fields'] ), $settings['post_type'], $settings['post_status'], Array( $post_id ) );
+		$post_fields = $result[0];
+		$post_fields['post_author'] = $this->get_author_name( $post_fields['post_author'] );
+		$post_headings = array_keys( $post_fields );
+		$post_headings = $this->add_prefix( 'wp_', $post_headings );
+		$post_values = array_values( $post_fields );
+
+		# Taxonomy fields
+		$tax_fields = $this->get_taxonomy_fields( $post_id );
+		$this->trace( 'tax_fields', $tax_fields );
+		$tax_headings = array_keys( $tax_fields );
+		$tax_headings = $this->add_prefix( 'tx_', $tax_headings );
+		$tax_values = array_values( $tax_fields );
+
+		# Thumbnail
+		$thumb_field = $this->get_thumbnail( $post_id );
+		$thumb_heading = array_keys( $thumb_field );
+		$thumb_heading = $this->add_prefix( 'fi_', $thumb_heading );
+		$thumb_value = array_values( $thumb_field );
+
+		# Custom fields		
+		$custom_fields = $this->get_custom_fields_by_post_id( $post_id, $settings['export_hidden_custom_fields'] );
+		$cf_headings = array_keys( $custom_fields );
+		$cf_headings = $this->add_prefix( 'cf_', $cf_headings );
+		$cf_values = array_values( $custom_fields );
+
+		$headings = array_merge( $post_headings, $tax_headings, $thumb_heading, $cf_headings );
+		$values = array_merge( $post_values, $tax_values, $thumb_value, $cf_values );
+		
+		$post = $this->apply_filters( $headings, $values, $settings );
+
+		$this->trace( 'Filtered Post', $post );
+
+		return $post;
+	}
+
+	public function add_prefix( $prefix, $keys ) {
+		
+		$prefixed = Array( );
+		if ( is_array( $keys ) && !empty( $keys ) ) {
+			foreach( $keys as $index => $key ) {
+				$prefixed[ $index ] = "{$prefix}{$key}";
+			} # End foreach
+		} # End if
+
+		return $prefixed;
+	}
+
+	public function remove_prefix( $prefix, $keys ) {
+		
+		$deprefixed = Array( );
+		if ( is_array( $keys ) && !empty( $keys ) ) {
+			foreach( $keys as $index => $key ) {
+				$deprefixed[ $index ] = preg_replace( '/^' . $prefix . '/', '', $key );
+			} # End foreach
+		} # End if
+
+		$this->trace( 'deprefixed', $deprefixed );
+
+		return $deprefixed;
+	}
+
+	public function apply_filters( $headings, $values, $settings ) {
+		
+		$include_list = $this->include_filter( $headings, $settings['include_field_list'], $settings['mandatory_fields'] );
+		$filter_list = $this->exclude_filter( $include_list, $settings['exclude_field_list'], $settings['mandatory_fields'] );
+
+		$this->trace( 'headings', $headings );
+		$this->trace( 'values', $values );
+		$this->trace( 'filter list', $filter_list );
+		
+		if ( is_array( $filter_list ) && !empty( $filter_list ) ) {
+			foreach( $filter_list as $index => $value ) {
+				$filtered_headings[] = $headings[ $index ];
+				$filtered_values[] = $values[ $index ];
+			} # End foreach
+		} # End if
+
+		return Array( 
+			'headings' => $filtered_headings,
+			'values' => $filtered_values
+		);
+	}
+
+	public function get_thumbnail( $post_id ) {
+		
+		$thumb_id = get_post_thumbnail_id( $post_id );
+		$thumb_src = wp_get_attachment_image_src( $thumb_id, 'full' );
+		$thumb_url = $thumb_src[0];
+		$upload_dir = wp_upload_dir();
+		$thumb_file = preg_replace( '|' . WP_CONTENT_URL . '/' . basename( $upload_dir['baseurl'] ) . '/|', '', $thumb_url );
+
+		return Array( 'thumbnail' => $thumb_file );
+	}
+
+	public function get_author_name( $author_id ) {
+		# Convert User id to username
+		if ( isset( $author_id ) && !empty( $author_id ) ) {
+			$user = get_user_by( 'id', $author_id );
+			if ( gettype( $user ) == 'object' ) {
+				$author_name = $user->get( 'user_login' );
+			} else { # Author id invalid, so blank the field.
+				$author_name = '';
+			}
+		}
+		return $author_name;
+	}
+
+	public function get_taxonomy_list( ) {
+		return get_taxonomies( Array( 'public' => TRUE ), 'names' );
+	}
+
+	public function get_taxonomy_fields( $post_id ) {
+		$taxonomy_values = Array( );
+		$taxonomy_list = $this->get_taxonomy_list( );
+		
+		$this->trace( 'Taxonomy List', $taxonomy_list );
+
+		foreach( $taxonomy_list as $taxonomy ) {
+			$taxonomy_values[] = $this->export_taxonomy( wp_get_object_terms( $post_id, $taxonomy ) );
+		}
+		
+		$tax_fields = array_combine( $taxonomy_list, $taxonomy_values );
+
+		return $tax_fields;
+	}
+
+	private function export_taxonomy( Array $items ) {
+
+		$output = Array( );
+		$items = $this->sort_taxonomy( $items );
+		foreach( $items as $i ) {
+			$text = "{$i->slug}:{$i->name}";
+			if ( $i->parent ) {
+				$parent = get_term( $i->parent, $i->taxonomy );
+				$text = $parent->slug . '~' . $text;
+			}
+
+			$output[] = urldecode( $text );
+		}
+
+		return implode( ',', $output );
+	}
+
+	private function sort_taxonomy( Array $items ) {
+		
+		if ( empty( $items ) ) return $items;
+
+		foreach( $items as $item ) {
+			$grouped[$item->parent]->children[$item->term_id] = $item;
+			$index[$item->term_id] = $item;
+		}
+
+		foreach( $grouped as $k => $v ) {
+			if ( isset( $index[$k] ) ) {
+				$index[$k]->children = $v->children;
+				unset( $grouped[$k] );
+			}
+		}
+
+		return $this->taxonomy_array_flatten( $grouped );
+	}
+
+	private function taxonomy_array_flatten( Array $array ) {
+		$flat = Array( );
+		foreach( $array as $k => $v ) {
+			if ( !empty( $v->children ) ) {
+				$children = $v->children;
+				unset( $v->children );
+				if ( isset( $v->slug ) ) $flat[] = $v;
+				$flat = array_merge( $flat, $this->taxonomy_array_flatten( $children ) );
+			} else {
+				$flat[] = $v;
+			}
+		}
+		return $flat;
+	}
+
 	public function get_posts( Array $fields, $post_type = NULL, $post_status = NULL, $post_ids = Array( ) ) {
 		$field_list = '`' . implode( '`,`', $fields ) . '`';
 		$sql = $this->build_query( $field_list, $post_type, $post_status, $post_ids );
@@ -59,17 +260,24 @@ class CPK_WPCSV_Posts_Model {
 		return (Array)$results;
 	}
 
-	public function get_custom_field_list( $all = FALSE ) {
+	public function get_custom_field_list( $exclude_hidden = FALSE ) {
 		$sql = "SELECT DISTINCT meta_key FROM {$this->db->postmeta}";
-		if ( !$all ) $sql .= " WHERE meta_key NOT LIKE '\_%'";
+		if ( $exclude_hidden ) $sql .= " WHERE meta_key NOT LIKE '\_%'";
 		return $this->db->get_col( $sql );
 	}
 	
-	public function get_custom_field_by_post_id( $post_id ) {
+	public function get_custom_fields_by_post_id( $post_id, $exclude_hidden = FALSE ) {
+
 		$sql = "SELECT DISTINCT meta_key, meta_value FROM {$this->db->postmeta}";
 		$sql .= " WHERE post_id = '{$post_id}'";
+		if ( $exclude_hidden ) $sql .= " AND meta_key NOT LIKE '\_%'";
 		$results = $this->db->get_results( $sql, ARRAY_A );
 		
+		$custom_field_keys = $this->get_custom_field_list( $exclude_hidden );
+		$custom_field_values = array_fill_keys( $custom_field_keys, '' );
+
+		$this->trace( 'Full CF List', $custom_field_values );
+
 		if ( is_array( $results ) && !empty( $results ) ) {
 			foreach( $results as $result ) {
 				$custom_field_values[ $result['meta_key'] ] = $result['meta_value'];
@@ -86,7 +294,7 @@ class CPK_WPCSV_Posts_Model {
 		$meta_values = $this->get_custom_field_by_post_id( $post_id );
 
 		foreach ( $custom_field_list as $cf ) {
-			if ( !in_array( $cf, $field_list ) ) continue;
+			#if ( !in_array( $cf, $field_list ) ) continue;
 			$val = ( isset( $meta_values[ $cf ] ) ) ? $meta_values[ $cf ] : '';
 			if ( unserialize( $val ) && function_exists( 'json_encode' ) ) {
 				$val = json_encode( unserialize( $val ) );
@@ -99,13 +307,13 @@ class CPK_WPCSV_Posts_Model {
 
 	public function exclude_filter( Array $elements, Array $rules, Array $mandatory_fields ) {
 
-		$filtered_array = $elements;
+		$filtered_array = Array( );
 
 		if ( is_array( $elements ) && !empty( $elements ) ) {
 			foreach( $elements as $key => $val ) {
-				if ( $this->rule_match( $key, $rules ) ) {
-					if ( !in_array( $key, $mandatory_fields ) ) unset( $filtered_array[ $key ] );
-				} 
+				if ( in_array( $val, $mandatory_fields ) || !$this->rule_match( $val, $rules ) ) {
+					$filtered_array[ $key ] = $val;
+				}
 			} # End foreach
 		} # End if
 
@@ -118,7 +326,7 @@ class CPK_WPCSV_Posts_Model {
 		
 		if ( is_array( $elements ) && !empty( $elements ) ) {
 			foreach( $elements as $key => $val ) {
-				if ( $this->rule_match( $key, $rules ) || in_array( $key, $mandatory_fields ) ) {
+				if ( $this->rule_match( $val, $rules ) || in_array( $val, $mandatory_fields ) ) {
 					$filtered_array[ $key ] = $val;
 				}
 			} # End foreach

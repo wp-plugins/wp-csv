@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.6.6
+Version: 1.7.0
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -61,6 +61,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 		const IMPORT_FILE_NAME = 'wpcsv-import.csv';
 		const EXPORT_FILE_NAME = 'wpcsv-export.csv';
+		const DEBUG_FILE_NAME = 'wpcsv-debug.log';
 
 		const ERROR_MISSING_POST_ID = 1;
 		const ERROR_MISSING_POST_PARENT = 2;
@@ -90,15 +91,16 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'post_type' => NULL,
 				'post_status' => NULL,
 				'limit' => 1000,
-				'post_fields' => Array( 'ID', 'post_date', 'post_status', 'post_title', 'post_content', 'post_excerpt', 'post_parent', 'post_name', 'post_type', 'ping_status', 'comment_status', 'menu_order', 'post_author' ),
-				'mandatory_fields' => Array( 'ID', 'post_date', 'post_title' ),
-				'access_level' => 'administrator'
+				'post_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_status', 'wp_post_title', 'wp_post_content', 'wp_post_excerpt', 'wp_post_parent', 'wp_post_name', 'wp_post_type', 'wp_ping_status', 'wp_comment_status', 'wp_menu_order', 'wp_post_author' ),
+				'mandatory_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_title' ),
+				'access_level' => 'administrator',
+				'debug' => '0'
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.6.6';
+			$this->settings['version'] = '1.7.0';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -107,12 +109,21 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 			foreach( array_keys( $settings ) as $key ) {
 				if ( !in_array( $key, $current_keys ) || empty( $this->settings[ $key ] ) ) {
-					$this->settings[ $key ] = $settings[$key];
+					$this->settings[ $key ] = $settings[ $key ];
+				}
+
+				if ( $key == 'post_fields' ) {
+					$this->settings[ $key ] = $settings[ $key ];
 				}
 			}
 			
 			$this->wpcsv = new CPK_WPCSV_Engine( $this->settings );
+			$this->debug = new CPK_WPCSV_Debug_Log( $this->settings['csv_path'] . '/' . self::DEBUG_FILE_NAME );
 
+			if ( $this->settings['debug'] ) $this->debug->enable( );
+
+			$this->wpcsv->set_debugger( $this->debug );
+			
 			$this->save_settings( );
 
 			$this->csv->delimiter = $this->settings['delimiter'];
@@ -135,7 +146,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 		public function file_writable( $path ) {
 			if ( $this->folder_writable( $path ) ) {
-				$success = file_put_contents( "{$path}/.wpcsv-test", 'Just a test file.  Delete this file if you read this.' );
+				$success = file_put_contents( "{$path}/.wpcsv-test", 'Just a test file.  You can delete this file if you like.' );
 			}
 
 			if ( $success ) {
@@ -219,6 +230,13 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				} else {
 					$this->settings['export_hidden_custom_fields'] = 0;
 				}
+				
+				if ( isset( $_POST['debug'] ) ) {
+					$this->settings['debug'] = 1;
+				} else {
+					$this->settings['debug'] = 0;
+				}
+				
 				$this->settings['include_field_list'] = preg_split( '/(,|\s)/', $_POST['include_field_list'] );
 				
 				$this->settings['exclude_field_list'] =  preg_split( '/(,|\s)/', $_POST['exclude_field_list'] );
@@ -240,6 +258,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 			$subdir = '/uploads';
 			$filename = self::EXPORT_FILE_NAME;
+			$debug_filename = self::DEBUG_FILE_NAME;
 
 			switch ( $view_name ) {
 				case 'import':
@@ -258,8 +277,9 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				case 'export':
 					$this->prepare_export( );
 					$enc = $this->settings['encoding'];
-					$url = site_url( ) . "/wp-admin/tools.php?page=wp-csv.php&action=download&file=$filename&enc=$enc";
-					$options = array_merge( Array( 'export_link' => $url ), $this->settings );
+					$export_url = site_url( ) . "/wp-admin/tools.php?page=wp-csv.php&action=download&file=$filename&enc=$enc";
+					$debug_url = site_url( ) . "/wp-admin/tools.php?page=wp-csv.php&action=download&file=$debug_filename&enc=$enc";
+					$options = array_merge( Array( 'export_link' => $export_url, 'debug_link' => $debug_url ), $this->settings );
 					$options['error'] = $error;
 					$this->view->page( 'export', $options );
 					break;
@@ -267,6 +287,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$this->view->page( 'download', $this->settings );
 					break;
 				default:
+					$this->debug->clear( );
 					$this->log->empty_table( );
 					$max_memory = ini_get( 'memory_limit' );
 					$max_execution_time = $this->wpcsv->get_max_execution_time( );

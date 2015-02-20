@@ -92,6 +92,11 @@ jQuery( function( ) {
 <tr><th><?php _e( 'Progress', 'wp-csv' ); ?></th><td><div id="progressbar_holder"><div id="progressbar"></div></div><span id='percent'>(0%)</span>
 <div id="download_link">
 <a href='<?php echo $export_link; ?>'><?php _e( 'Download CSV File', 'wp-csv' ); ?></a>
+<?php if ( $debug ): ?>
+<p>
+Debug Active: <a href='<?php echo $debug_link; ?>'><?php _e( 'Download Debug File', 'wp-csv' ); ?></a>
+</p>
+<?php endif; ?>
 </div>
 <p id='nothing-to-export'><?php _e( 'You seem to have nothing to export.  Add a post or page and try again.', 'wp-csv' ); ?></p>
 </td></tr>
