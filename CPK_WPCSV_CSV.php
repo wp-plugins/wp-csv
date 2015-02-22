@@ -11,7 +11,13 @@ class CPK_WPCSV_CSV {
 
 	public function __construct( ) {
 		ini_set( 'auto_detect_line_endings', TRUE );
-		iconv_set_encoding( 'input_encoding', self::DEFAULT_CHARACTER_ENCODING );
+		if ( function_exists('iconv' ) && PHP_VERSION_ID < 50600 ) {
+			iconv_set_encoding('internal_encoding', self::DEFAULT_CHARACTER_ENCODING );
+			iconv_set_encoding('input_encoding', self::DEFAULT_CHARACTER_ENCODING );
+			iconv_set_encoding('output_encoding', self::DEFAULT_CHARACTER_ENCODING );
+		} elseif ( PHP_VERSION_ID >= 50600 ) {
+			ini_set( 'default_charset', self::DEFAULT_CHARACTER_ENCODING );
+		}
 		$this->log_model = new CPK_WPCSV_Log_Model( );
 	}
 

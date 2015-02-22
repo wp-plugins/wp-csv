@@ -47,6 +47,7 @@ No screenshots available.
 * Overhaul of export code to improve handling of fields with the same name (ie a custom field called 'post_title')
 * All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
 * Modified import to allow import of the new prefixed field names
+* Added code to prevent deprecated warning for inconv_set_encoding call in PHP > 5.6
 = 1.6.6 =
 * Minor bug fixes related to the 'no posts found' problem.  (Thank you napcok and mcdorf!)
 = 1.6.5 =
@@ -152,3 +153,4 @@ No screenshots available.
 * Overhaul of export code to improve handling of fields with the same name (ie a custom field called 'post_title')
 * All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
 * Modified import to allow import of the new prefixed field names
+* Added code to prevent deprecated warning for inconv_set_encoding call in PHP > 5.6
