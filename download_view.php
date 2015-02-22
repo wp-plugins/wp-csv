@@ -46,8 +46,12 @@ function cpkws_wpcsv_downloadFile( $fullPath, $encoding ){
 				$bom = '';
 		}	
 		
-		if ( PHP_VERSION_ID < 50600 ) {
-			iconv_set_encoding( 'output_encoding', $encoding );
+		if ( function_exists('iconv' ) && PHP_VERSION_ID < 50600 ) {
+			iconv_set_encoding('internal_encoding', $encoding );
+			iconv_set_encoding('input_encoding', $encoding );
+			iconv_set_encoding('output_encoding', $encoding );
+		} elseif ( PHP_VERSION_ID >= 50600 ) {
+			ini_set( 'default_charset', self::DEFAULT_CHARACTER_ENCODING );
 		}
 
 		// Parse Info / Get Extension
