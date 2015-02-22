@@ -1,0 +1,49 @@
+div#wpcsv fieldset {
+	border: 1px solid black;
+}
+
+div#wpcsv table.wpcsv {
+	text-align: left;
+	border: 1px solid black;
+	background-color: white;
+}
+
+div#wpcsv table.wpcsv tr td {
+	padding: 5px;
+	padding-left: 10px;
+}
+
+div#wpcsv table.wpcsv tr th {
+	padding: 5px;
+	padding-left: 10px;
+	border-bottom: 1px solid black;
+	background-color: #dddddd;
+}
+
+div#wpcsv .red {
+	color: red;
+}
+
+div#wpcsv div#progressbar {
+	height: 1em;
+	width: 98%;
+	display: none;
+}
+
+div#wpcsv div#download_link {
+	display: none;
+	padding: 1em;
+}
+
+div#wpcsv hr {
+	width: 98%;
+	margin-left: 0;
+}
+
+div#wpcsv div#export_wrapper {
+	width: 80%;
+}
+
+div#wpcsv input#start_export {
+	text-align: left;
+}
