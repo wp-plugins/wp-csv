@@ -265,6 +265,8 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 				// Add thumbnail if one can be found
 				if ( !empty( $thumb_file ) ) { // Ignore blank thumb_file fields
 
+					$imported = FALSE;
+
 					// Check media library for image
 					$sql = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = '$thumb_file'";
 					$attach_id = $wpdb->get_var( $sql );
@@ -346,6 +348,8 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 
 						// Add thumbnail if one can be found
 						if ( !empty( $thumb_file ) ) { // Ignore blank thumb_file fields
+
+							$imported = FALSE;
 
 							// Check media library for image
 							$sql = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = '$thumb_file'";

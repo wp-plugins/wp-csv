@@ -43,7 +43,7 @@ foreach ( $post_types as $custom_post_type ) {
 echo "<option value=''>All (No Filtering)</option>";
 foreach ( $post_status_list as $status ) {
 	$selected = ( $status == $post_status ) ? ' selected' : '';
-	if ( !in_array( $status, Array( 'auto-draft', 'inherit', 'trash' ) ) ) { # Exclude these for now
+	if ( !in_array( $status, Array( 'auto-draft', 'inherit' ) ) ) { # Exclude these for now
 		echo "<option value='{$status}'{$selected}>{$status}</option>";
 	}
 }

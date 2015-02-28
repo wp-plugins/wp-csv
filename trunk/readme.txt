@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: wp, csv, import, export, excel, taxonomy, tag, category, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 1.6.6
+Stable tag: 1.7.0
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -48,6 +48,7 @@ No screenshots available.
 * All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
 * Modified import to allow import of the new prefixed field names
 * Added code to prevent deprecated warning for inconv_set_encoding call in PHP > 5.6
+* By request, posts in 'trash' can now be exported
 = 1.6.6 =
 * Minor bug fixes related to the 'no posts found' problem.  (Thank you napcok and mcdorf!)
 = 1.6.5 =
@@ -154,3 +155,4 @@ No screenshots available.
 * All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
 * Modified import to allow import of the new prefixed field names
 * Added code to prevent deprecated warning for inconv_set_encoding call in PHP > 5.6
+* By request, posts in 'trash' can now be exported

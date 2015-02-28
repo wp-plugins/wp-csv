@@ -29,7 +29,7 @@ class CPK_WPCSV_Posts_Model {
 		$post_type_filter = ( $post_type ) ?  "AND post_type = '{$post_type}'" : '';
 		$post_status_filter = ( $post_status ) ?  "AND post_status = '{$post_status}'" : '';
 		$post_id_filter = ( isset( $post_id_list ) ) ? "AND ID IN ( " . implode( ',', $post_id_list ) . " )" : '';
-		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE post_status in ('publish','future','private','draft', 'pending') {$post_type_filter} {$post_id_filter} {$post_status_filter} ORDER BY post_modified DESC";
+		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE post_status in ('publish','future','private','draft', 'pending', 'trash') {$post_type_filter} {$post_id_filter} {$post_status_filter} ORDER BY post_modified DESC";
 
 		$this->trace( 'Post Query', $sql );
 
