@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: wp, csv, import, export, excel, taxonomy, tag, category, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -42,6 +42,8 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.7.1 =
+* New version to prevent the 'invalid header' error that some users were getting on install/upgrade
 = 1.7.0 =
 * Added a debug setting to trace export operations (import to be added in future)
 * Overhaul of export code to improve handling of fields with the same name (ie a custom field called 'post_title')
@@ -148,6 +150,9 @@ No screenshots available.
 * Initial upload
 
 == Upgrade Notice ==
+
+= 1.7.1 =
+* New version to prevent the 'invalid header' error that some users were getting on install/upgrade
 
 = 1.7.0 =
 * Added a debug setting to trace export operations (import to be added in future)
