@@ -273,7 +273,7 @@ class CPK_WPCSV_Posts_Model {
 		if ( !$export_hidden ) $sql .= " AND meta_key NOT LIKE '\_%'";
 		$results = $this->db->get_results( $sql, ARRAY_A );
 		
-		$custom_field_keys = $this->get_custom_field_list( $exclude_hidden );
+		$custom_field_keys = $this->get_custom_field_list( $export_hidden );
 		$custom_field_values = array_fill_keys( $custom_field_keys, '' );
 
 		$this->trace( 'Full CF List', $custom_field_values );
