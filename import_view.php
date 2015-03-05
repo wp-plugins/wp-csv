@@ -79,7 +79,9 @@ jQuery( function( ) {
 });
 
 </script>
+<?php if ( $error ): ?>
 <strong class='red'><?php echo $error;?></strong>
+<?php else: ?>
 <table class='widefat'>
 <thead>
 <tr><th colspan='2'><strong><?php _e( 'Import Uploaded File', 'wp-csv' ); ?></strong></th></tr>
@@ -96,3 +98,4 @@ jQuery( function( ) {
 <input type='button' id='start_import' value='Import' />
 </div>
 </div>
+<?php endif; ?>

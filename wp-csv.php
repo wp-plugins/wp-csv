@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.7.1
+Version: 1.7.2
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -100,7 +100,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.7.1';
+			$this->settings['version'] = '1.7.2';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -262,7 +262,17 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 			switch ( $view_name ) {
 				case 'import':
-					move_uploaded_file( $_FILES['uploadedfile']['tmp_name'], $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME );
+					$source = $_FILES['uploadedfile']['tmp_name'];
+					$dest = $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME;
+					move_uploaded_file( $source, $dest );
+
+					if ( file_exists( $dest ) ) {
+						$line = fgets( fopen( $dest, 'r' ) );
+						if ( substr( $line, 0, 5 ) != 'wp_ID' ) {
+							$error = "<h3>This does not seem to be a valid import file!</h3>  <p>Please note that the column heading format changed in version 1.7.0! (ie 'ID' became 'wp_ID', etc).  You can probably fix the problem by exporting a new file and then cutting and pasting the headings into the file you just tried to import.</p>";
+						}
+					}
+					
 					$options['file_name'] = $_FILES['uploadedfile']['name'];
 					$options['error'] = $error;
 					$this->view->page( 'import', $options );
