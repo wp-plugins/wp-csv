@@ -260,17 +260,17 @@ class CPK_WPCSV_Posts_Model {
 		return (Array)$results;
 	}
 
-	public function get_custom_field_list( $exclude_hidden = FALSE ) {
+	public function get_custom_field_list( $export_hidden = TRUE ) {
 		$sql = "SELECT DISTINCT meta_key FROM {$this->db->postmeta}";
-		if ( $exclude_hidden ) $sql .= " WHERE meta_key NOT LIKE '\_%'";
+		if ( !$export_hidden ) $sql .= " WHERE meta_key NOT LIKE '\_%'";
 		return $this->db->get_col( $sql );
 	}
 	
-	public function get_custom_fields_by_post_id( $post_id, $exclude_hidden = FALSE ) {
+	public function get_custom_fields_by_post_id( $post_id, $export_hidden = TRUE ) {
 
 		$sql = "SELECT DISTINCT meta_key, meta_value FROM {$this->db->postmeta}";
 		$sql .= " WHERE post_id = '{$post_id}'";
-		if ( $exclude_hidden ) $sql .= " AND meta_key NOT LIKE '\_%'";
+		if ( !$export_hidden ) $sql .= " AND meta_key NOT LIKE '\_%'";
 		$results = $this->db->get_results( $sql, ARRAY_A );
 		
 		$custom_field_keys = $this->get_custom_field_list( $exclude_hidden );
