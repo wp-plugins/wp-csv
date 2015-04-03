@@ -17,9 +17,9 @@
 <option <?php if ($encoding == 'UTF-8-BOM' ) echo 'selected';?> value="UTF-8-BOM">UTF-8 (with BOM)</option>
 </select></td></tr>
 <?php 
-	$checked = ( htmlentities( $export_hidden_custom_fields ) ) ? 'checked ' : '';
+	$hidden_checked = ( $export_hidden_custom_fields ) ? 'checked ' : '';
 ?>
-<tr><th><?php _e( "Export 'Hidden' Custom Fields", 'wp-csv' ); ?>:</th><td><input name="export_hidden_custom_fields" type="checkbox" <?php echo $checked; ?>/></td></tr>
+<tr><th><?php _e( "Export 'Hidden' Custom Fields", 'wp-csv' ); ?>:</th><td><input name="export_hidden_custom_fields" type="checkbox" <?php echo $hidden_checked; ?>/></td></tr>
 <tr><th><?php _e( "Include Fields", 'wp-csv' ); ?>:</th><td><textarea name="include_field_list" cols="70" rows="5" /><?php echo implode( ',', $include_field_list ); ?></textarea>
 <blockquote><i><?php _e( "Control which fields are included in the export file.  You can enter the full field name or a pattern such as '*' (for everything), 'start*' (for fields starting with 'start'), or '*end' (for fields ending with 'end'). Separate field rules with a comma.  NOTE: Some fields are mandatory and will appear no matter what rules you add.  Excluded fields will not appear.", 'wp-csv' ); ?></i></blockquote></td></tr>
 <tr><th><?php _e( "Exclude Fields", 'wp-csv' ); ?>:</th><td><textarea name="exclude_field_list" cols="70" rows="5" /><?php echo implode( ',', $exclude_field_list ); ?></textarea>
@@ -62,7 +62,7 @@ if ( current_user_can( 'manage_options' ) ):
 endif;
 ?>
 <?php 
-	$debug_checked = ( htmlentities( $debug ) ) ? 'checked ' : '';
+	$debug_checked = ( $debug ) ? 'checked ' : '';
 ?>
 <tr><th><?php _e( "Debug Active", 'wp-csv' ); ?>:</th><td><input name="debug" type="checkbox" <?php echo $debug_checked; ?>/>
 <blockquote><i><?php _e( "This may cause extra load and create quite a large trace file.  Only turn on if there's a problem. NOTE: Currently only traces export.", 'wp-csv' ); ?></i></blockquote></td></tr>
