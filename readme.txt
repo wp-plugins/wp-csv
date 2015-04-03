@@ -4,7 +4,7 @@ Donate link: http://cpkwebsolutions.com/donate
 Tags: wp, csv, import, export, excel, taxonomy, tag, category, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -42,6 +42,9 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.7.4 =
+* Fixed bug causing hidden fields to always export.
+* Errors generated during AJAX calls will now be displayed
 = 1.7.3 =
 * Fixed bug causing fields to not line up correctly sometimes.
 = 1.7.2 =
@@ -156,19 +159,6 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-= 1.7.3 =
-* Fixed bug causing fields to not line up correctly sometimes.
-= 1.7.2 =
-* Fixed bug with hidden custom fields not exporting.
-* Added errors for when an old style import/export file is used.
-
-= 1.7.1 =
-* New version to prevent the 'invalid header' error that some users were getting on install/upgrade
-
-= 1.7.0 =
-* Added a debug setting to trace export operations (import to be added in future)
-* Overhaul of export code to improve handling of fields with the same name (ie a custom field called 'post_title')
-* All fields will now be exported with prefixes (ie wp_ID, wp_post_title, cf_this_is_custom_field, tx_post_tag)
-* Modified import to allow import of the new prefixed field names
-* Added code to prevent deprecated warning for inconv_set_encoding call in PHP > 5.6
-* By request, posts in 'trash' can now be exported
+= 1.7.4 =
+* Fixed bug causing hidden fields to always export.
+* Errors generated during AJAX calls will now be displayed

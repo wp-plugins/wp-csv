@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.7.3
+Version: 1.7.4
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -85,7 +85,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'date_format' => 'US',
 				'encoding' => 'UTF-8',
 				'csv_path' => $this->get_csv_folder( ),
-				'export_hidden_custom_fields' => '1',
+				'export_hidden_custom_fields' => 1,
 				'include_field_list' => Array( '*' ),
 				'exclude_field_list' => Array( ),
 				'post_type' => NULL,
@@ -94,13 +94,13 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'post_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_status', 'wp_post_title', 'wp_post_content', 'wp_post_excerpt', 'wp_post_parent', 'wp_post_name', 'wp_post_type', 'wp_ping_status', 'wp_comment_status', 'wp_menu_order', 'wp_post_author' ),
 				'mandatory_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_title' ),
 				'access_level' => 'administrator',
-				'debug' => '0'
+				'debug' => 0
 			);
 
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.7.3';
+			$this->settings['version'] = '1.7.4';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -108,7 +108,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			}
 
 			foreach( array_keys( $settings ) as $key ) {
-				if ( !in_array( $key, $current_keys ) || empty( $this->settings[ $key ] ) ) {
+				if ( !in_array( $key, $current_keys ) || $this->settings[ $key ] === '' ) {
 					$this->settings[ $key ] = $settings[ $key ];
 				}
 
@@ -230,7 +230,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				} else {
 					$this->settings['export_hidden_custom_fields'] = 0;
 				}
-				
+
 				if ( isset( $_POST['debug'] ) ) {
 					$this->settings['debug'] = 1;
 				} else {
@@ -349,6 +349,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 		public function save_settings( ) {
 			update_option( $this->option_name, $this->settings );
+			
 			// A bit ugly but necessary, refactor later
 			$this->csv->delimiter = $this->settings['delimiter'];
 			$this->csv->enclosure = $this->settings['enclosure'];
@@ -377,6 +378,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			$number_processed = $this->wpcsv->export( $include_headings );
 
 			$position = $start + $number_processed;
+
 			$ret_percentage = round( ( ( $position - 1 ) / $total ) * 100 );
 
 			$errors = ob_get_clean( );
