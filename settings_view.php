@@ -48,6 +48,11 @@ foreach ( $post_status_list as $status ) {
 	}
 }
 ?></select></td></tr>
+<?php 
+	$include_attachments_checked = ( $include_attachments ) ? 'checked ' : '';
+?>
+<tr><th><?php _e( "Include Attachments", 'wp-csv' ); ?>:</th><td><input name="include_attachments" type="checkbox" <?php echo $include_attachments_checked; ?>/>
+<blockquote><i><?php _e( "Most users should leave this off. It does not allow you to create attachments, but it may be useful in certain circumstances.", 'wp-csv' ); ?></i></blockquote></td></tr>
 <?php
 if ( current_user_can( 'manage_options' ) ):
 ?>

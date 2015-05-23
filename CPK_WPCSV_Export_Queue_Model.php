@@ -53,7 +53,7 @@ class CPK_WPCSV_Export_Queue_Model {
 	}
 
 	public function add_post_ids( Array $post_ids ) {
-		if ( !empty( $post_ids ) ) {
+		if ( is_array( $post_ids ) && !empty( $post_ids ) ) {
 			array_walk( $post_ids, Array( $this, 'wrap_post_ids' ) );
 			$post_id_sql = implode( ',', $post_ids );
 			$sql = "INSERT INTO {$this->table_name} ( `post_id` ) VALUES {$post_id_sql}";
@@ -71,10 +71,12 @@ class CPK_WPCSV_Export_Queue_Model {
 		return $this->db->get_var( $sql );
 	}
 
-	public function mark_done( Array $post_ids ) {
-		$post_id_list = implode( ',', $post_ids );
-		$sql =	"UPDATE {$this->table_name} SET done = 1 WHERE post_id IN ( {$post_id_list} )";
-		$this->db->query( $sql );
+	public function mark_done( $post_ids ) {
+		if ( is_array( $post_ids ) && !empty( $post_ids ) ) {
+			$post_id_list = implode( ',', $post_ids );
+			$sql =	"UPDATE {$this->table_name} SET done = 1 WHERE post_id IN ( {$post_id_list} )";
+			$this->db->query( $sql );
+		}
 	}
 	
 } # End class CPK_WPCSV_Export_Queue_Model

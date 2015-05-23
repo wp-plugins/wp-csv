@@ -1,7 +1,6 @@
 <div id='wpcsv'>
 <div id='cpk_wpcsv_header'>
 <h2>WP CSV</h2>
-<hr/>
 </div>
 <div id='cpk_wpcsv_content'>
 <div id='cpk_wpcsv_left'>
