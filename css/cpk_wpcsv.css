@@ -133,3 +133,11 @@ div#wpcsv div#progressbar ui-widget-header {
 	background-color: #0074F8;
 	border-color: #0074F8;
 }
+
+div#wpcsv blockquote {
+	border: none;
+}
+
+div#wpcsv h3 {
+	margin-top: 0;
+}

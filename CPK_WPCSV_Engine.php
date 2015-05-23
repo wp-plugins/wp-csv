@@ -15,7 +15,7 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			$this->mandatory_fields = $settings['mandatory_fields'];
 			$this->settings = $settings;
 			$this->export_model = new CPK_WPCSV_Export_Queue_Model( );
-			$this->posts_model = new CPK_WPCSV_Posts_Model( );
+			$this->posts_model = new CPK_WPCSV_Posts_Model( $this->settings );
 			$this->csv = new CPK_WPCSV_CSV( );
 			$this->csv->delimiter = $this->settings['delimiter'];
 			$this->csv->enclosure = $this->settings['enclosure'];
@@ -40,7 +40,7 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			$this->export_model->empty_table( );
 			$export_file = $this->settings['csv_path'] . '/' . self::EXPORT_FILE_NAME . '.csv';
 			if ( file_exists( $export_file ) ) unlink( $export_file );
-			$post_ids = $this->posts_model->get_post_ids( $this->settings['post_type'], $this->settings['post_status'] );
+			$post_ids = $this->posts_model->get_post_ids( $this->settings['post_type'], $this->settings['include_attachments'], $this->settings['post_status'] );
 			
 			if ( $post_ids ) {
 				$this->export_model->add_post_ids( $post_ids );
@@ -206,7 +206,15 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			global $wpdb;
 			$posts_table = $wpdb->prefix . 'posts';
 
-			// Pre-import data sanitization
+			# Pre-import data sanitization
+
+			if ( $p['post_parent'] > 0 ) {
+				$post_parent = get_post( $p['post_parent'], ARRAY_A );
+				if ( !isset( $post_parent ) || $post_parent['post_type'] != 'page' ) {
+					$this->log->add_message( "Post parent id ({$p['post_parent']}) is specified, but a post with that id could not be found.", 'Warning', $p );
+				}
+			}
+
 
 			if ( preg_match( '/\//', $p['post_date'] ) ) { # If it has slashes then determine US/English format
 				if ( $this->settings['date_format'] == 'US' ) {
@@ -220,12 +228,19 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 
 			$p['post_date'] = date( 'Y-m-d H:i:s', strtotime( $p['post_date'] ) );
 			$p['post_date_gmt'] = get_gmt_from_date( $p['post_date'] ); 
-			if ( $p['post_parent'] > 0 ) {
-				$post_parent = get_post( $p['post_parent'], ARRAY_A );
-				if ( !isset( $post_parent ) || $post_parent['post_type'] != 'page' ) {
-					$this->log->add_message( "Post parent id ({$p['post_parent']}) is specified, but a post with that id could not be found.", 'Warning', $p );
+
+			if ( preg_match( '/\//', $p['post_modified'] ) ) { # If it has slashes then determine US/English format
+				if ( $this->settings['date_format'] == 'US' ) {
+					list( $mm, $dd, $the_rest ) = explode( '/', $p['post_modified'] );
+				} else {
+					list( $dd, $mm, $the_rest ) = explode( '/', $p['post_modified'] );
 				}
+				list( $yyyy, $time ) = explode( ' ', $the_rest );
+				$p['post_modified'] = "{$yyyy}-{$mm}-{$dd} $time";
 			}
+
+			$p['post_modified'] = date( 'Y-m-d H:i:s', strtotime( $p['post_modified'] ) );
+			$p['post_modified_gmt'] = get_gmt_from_date( $p['post_modified'] ); 
 
 			# Convert User id to username
 			if ( !empty( $p['post_author'] ) ) {
@@ -248,8 +263,10 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 				}
 
 				// wp_insert_post and wp_publish_post don't appear to support publishing to the future, so hack required:
-				if ( strtotime( $p['post_date'] ) > time() ) {
+				if ( strtotime( $p['post_date'] ) > current_time( 'timestamp' ) ) {
 					$wpdb->update( $posts_table, array( 'post_status' => 'future' ), array( 'ID' => $id ) );
+				} elseif ( $p['post_status'] == 'future' ) {
+					$wpdb->update( $posts_table, array( 'post_status' => 'publish' ), array( 'ID' => $id ) );
 				}
 
 				# Custom fields	
@@ -324,8 +341,10 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 						wp_update_post( $p );
 	
 						// wp_update_post and wp_publish_post don't appear to support publishing to the future, so hack required:
-						if ( strtotime( $p['post_date'] ) > time() ) {
+						if ( strtotime( $p['post_date'] ) > current_time( 'timestamp' ) ) {
 							$wpdb->update( $posts_table, array( 'post_status' => 'future' ), array( 'ID' => $p['ID'] ) );
+						} elseif ( $p['post_status'] == 'future' ) {
+							$wpdb->update( $posts_table, array( 'post_status' => 'publish' ), array( 'ID' => $id ) );
 						}
 
 						$taxonomy_list = $this->posts_model->get_taxonomy_list( );

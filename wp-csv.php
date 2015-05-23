@@ -3,7 +3,7 @@
 Plugin Name: WP CSV
 Plugin URI: http://cpkwebsolutions.com/plugins/wp-csv
 Description: A powerful, yet easy to use, CSV Importer/Exporter for Wordpress posts and pages. 
-Version: 1.7.4
+Version: 1.7.5
 Author: CPK Web Solutions
 Author URI: http://cpkwebsolutions.com
 Text Domain: wp-csv
@@ -89,9 +89,10 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				'include_field_list' => Array( '*' ),
 				'exclude_field_list' => Array( ),
 				'post_type' => NULL,
+				'include_attachments' => 0,
 				'post_status' => NULL,
-				'limit' => 1000,
-				'post_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_status', 'wp_post_title', 'wp_post_content', 'wp_post_excerpt', 'wp_post_parent', 'wp_post_name', 'wp_post_type', 'wp_ping_status', 'wp_comment_status', 'wp_menu_order', 'wp_post_author' ),
+				'limit' => 100,
+				'post_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_modified', 'wp_post_status', 'wp_post_title', 'wp_post_content', 'wp_post_excerpt', 'wp_post_parent', 'wp_post_name', 'wp_post_type', 'wp_post_mime_type', 'wp_ping_status', 'wp_comment_status', 'wp_menu_order', 'wp_post_author' ),
 				'mandatory_fields' => Array( 'wp_ID', 'wp_post_date', 'wp_post_title' ),
 				'access_level' => 'administrator',
 				'debug' => 0
@@ -100,7 +101,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 			add_option( $this->option_name, $settings ); // Does nothing if already exists
 
 			$this->settings = get_option( $this->option_name );
-			$this->settings['version'] = '1.7.4';
+			$this->settings['version'] = '1.7.5';
 
 			$current_keys = Array( );
 			if ( is_array( $this->settings ) ) {
@@ -112,7 +113,15 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$this->settings[ $key ] = $settings[ $key ];
 				}
 
+				if ( $key == 'limit' ) {
+					$this->settings[ $key ] = $settings[ $key ];
+				}
+
 				if ( $key == 'post_fields' ) {
+					$this->settings[ $key ] = $settings[ $key ];
+				}
+				
+				if ( $key == 'mandatory_fields' ) {
 					$this->settings[ $key ] = $settings[ $key ];
 				}
 			}
@@ -237,6 +246,12 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$this->settings['debug'] = 0;
 				}
 				
+				if ( isset( $_POST['include_attachments'] ) ) {
+					$this->settings['include_attachments'] = 1;
+				} else {
+					$this->settings['include_attachments'] = 0;
+				}
+
 				$this->settings['include_field_list'] = preg_split( '/(,|\s)/', $_POST['include_field_list'] );
 				
 				$this->settings['exclude_field_list'] =  preg_split( '/(,|\s)/', $_POST['exclude_field_list'] );
@@ -246,7 +261,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 				if ( !empty( $_POST['access_level'] ) ) $this->settings['access_level'] = $_POST['access_level'];
 				if ( empty( $this->settings['access_level'] ) ) $this->settings['access_level'] = 'administrator';
 
-				$this->settings['limit'] = 1000;
+				$this->settings['limit'] = 100;
 
 				$this->save_settings();
 			}
@@ -262,6 +277,12 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 
 			switch ( $view_name ) {
 				case 'import':
+					if ( empty( $_FILES ) || ( isset( $_SERVER['CONTENT_LENGTH'] ) && (int)$_SERVER['CONTENT_LENGTH'] > $this->convert_to_bytes( ini_get( 'post_max_size' ) ) ) ) {
+						$options['error'] = "<h3>The file you uploaded appears to be larger than your 'post_max_size' and/or 'upload_max_filesize' PHP ini settings!</h3><p>Make the file smaller or talk to your web host.</p>";
+						$this->view->page( 'import', $options );
+						break;
+					} 
+
 					$source = $_FILES['uploadedfile']['tmp_name'];
 					$dest = $this->settings['csv_path'] . '/' . self::IMPORT_FILE_NAME;
 					move_uploaded_file( $source, $dest );
@@ -272,6 +293,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 							$error = "<h3>This does not seem to be a valid import file!</h3>  <p>Please note that the column heading format changed in version 1.7.0! (ie 'ID' became 'wp_ID', etc).  You can probably fix the problem by exporting a new file and then cutting and pasting the headings into the file you just tried to import.</p>";
 						}
 					}
+
 					
 					$options['file_name'] = $_FILES['uploadedfile']['name'];
 					$options['error'] = $error;
@@ -316,6 +338,13 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 					$options['post_status_list'] = array_unique( array_merge( $wpdb->get_col( $sql ), Array( 'publish', 'draft', 'future', 'private', 'trash' ) ) );
 					$this->view->page( 'settings', $options );
 			}
+		}
+
+		private function convert_to_bytes( $ini_size ) {
+			$units = array( 'B'=>0, 'KB'=>1, 'M' => 2, 'MB'=>2, 'G' => 3, 'GB'=>3, 'TB'=>4, 'PB'=>5, 'EB'=>6, 'ZB'=>7, 'YB'=>8 );
+			list( $number, $unit ) = preg_split('#(?<=\d)(?=[a-z])#i', $ini_size );
+
+			return $number * pow( 1024, $units[ $unit ] );
 		}
 
 		public function file_permissions_problem( ) {

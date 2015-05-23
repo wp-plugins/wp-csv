@@ -6,10 +6,12 @@ class CPK_WPCSV_Posts_Model {
 
 	private $db;
 	private $debugger = NULL;
+	private $settings = Array( );
 
-	public function __construct( ) {
+	public function __construct( $settings ) {
 		global $wpdb;
 		$this->db = $wpdb;
+		$this->settings = $settings;
 		
 	}
 
@@ -25,19 +27,69 @@ class CPK_WPCSV_Posts_Model {
 		}
 	}
 
-	private function build_query( $fields, $post_type, $post_status, $post_id_list = NULL ) {
-		$post_type_filter = ( $post_type ) ?  "AND post_type = '{$post_type}'" : '';
-		$post_status_filter = ( $post_status ) ?  "AND post_status = '{$post_status}'" : '';
+	private function build_query( $fields, $post_id_list = NULL ) {
+
+		$post_types_filter = '';
+		$post_types = $this->get_post_types_list( );
+		if ( $post_types ) {
+			$post_types_list = implode( ',', $post_types );
+			$post_types_filter = "AND post_type IN ( {$post_types_list} )";
+		}
+		
+		$post_status_filter = '';
+		$post_statuses = $this->get_post_status_list( );
+		if ( $post_statuses ) {
+			$post_status_list = implode( ',', $post_statuses );
+			$post_status_filter = "AND post_status IN ( {$post_status_list} )";
+		}
+		
+		$excluded_post_types_filter = "AND post_type NOT IN ( 'revision', 'nav_menu_item', 'wp-types-group' )";
+
 		$post_id_filter = ( isset( $post_id_list ) ) ? "AND ID IN ( " . implode( ',', $post_id_list ) . " )" : '';
-		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE post_status in ('publish','future','private','draft', 'pending', 'trash') {$post_type_filter} {$post_id_filter} {$post_status_filter} ORDER BY post_modified DESC";
+		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE 1 = 1 {$post_status_filter} {$post_type_filter} {$excluded_post_types_filter} {$post_id_filter} ORDER BY post_modified DESC";
 
 		$this->trace( 'Post Query', $sql );
 
 		return $sql;
 	}
 
-	public function get_post_ids( $post_type = NULL, $post_status = NULL ) {
-		$sql = $this->build_query( 'ID,post_modified', $post_type, $post_status );
+	private function get_post_types_list( ) {
+		
+		$post_types = Array( );
+		if ( !empty( $this->settings['post_type'] ) ) {
+			$post_types[] = "'{$this->settings['post_type']}'";
+			if ( $this->settings['include_attachments'] ) {
+				$post_types[] = "'attachment'";
+			}
+		}
+
+		return $post_types;
+	}
+
+	private function get_post_status_list( ) {
+		
+		$post_statuses = Array( 
+			"'publish'",
+			"'future'",
+			"'private'",
+			"'draft'",
+			"'pending'",
+			"'trash'"
+		);
+
+		if ( !empty( $this->settings['post_status'] ) ) {
+			$post_statuses = Array( "'{$this->settings['post_status']}'" );
+		}
+		
+		if ( $this->settings['include_attachments'] ) {
+			$post_statuses[] = "'inherit'";
+		}
+
+		return $post_statuses;
+	}
+
+	public function get_post_ids( ) {
+		$sql = $this->build_query( 'ID,post_modified' );
 		$post_ids = Array( );
 
 		# $wpdb uses far too much memory so bypassing...
@@ -69,13 +121,13 @@ class CPK_WPCSV_Posts_Model {
 		return $post_ids;
 	}
 
-	public function get_post( $post_id, $settings ) {
+	public function get_post( $post_id ) {
 
 		$headings = Array( );
 		$values = Array( );
 
 		# WP Posts fields
-		$result = $this->get_posts( $this->remove_prefix( 'wp_', $settings['post_fields'] ), $settings['post_type'], $settings['post_status'], Array( $post_id ) );
+		$result = $this->get_posts( $this->remove_prefix( 'wp_', $this->settings['post_fields'] ), Array( $post_id ) );
 		$post_fields = $result[0];
 		$post_fields['post_author'] = $this->get_author_name( $post_fields['post_author'] );
 		$post_headings = array_keys( $post_fields );
@@ -96,7 +148,7 @@ class CPK_WPCSV_Posts_Model {
 		$thumb_value = array_values( $thumb_field );
 
 		# Custom fields		
-		$custom_fields = $this->get_custom_fields_by_post_id( $post_id, $settings['export_hidden_custom_fields'] );
+		$custom_fields = $this->get_custom_fields_by_post_id( $post_id, $this->settings['export_hidden_custom_fields'] );
 		$cf_headings = array_keys( $custom_fields );
 		$cf_headings = $this->add_prefix( 'cf_', $cf_headings );
 		$cf_values = array_values( $custom_fields );
@@ -104,7 +156,7 @@ class CPK_WPCSV_Posts_Model {
 		$headings = array_merge( $post_headings, $tax_headings, $thumb_heading, $cf_headings );
 		$values = array_merge( $post_values, $tax_values, $thumb_value, $cf_values );
 		
-		$post = $this->apply_filters( $headings, $values, $settings );
+		$post = $this->apply_filters( $headings, $values, $this->settings );
 
 		$this->trace( 'Filtered Post', $post );
 
@@ -139,8 +191,8 @@ class CPK_WPCSV_Posts_Model {
 
 	public function apply_filters( $headings, $values, $settings ) {
 		
-		$include_list = $this->include_filter( $headings, $settings['include_field_list'], $settings['mandatory_fields'] );
-		$filter_list = $this->exclude_filter( $include_list, $settings['exclude_field_list'], $settings['mandatory_fields'] );
+		$include_list = $this->include_filter( $headings, $this->settings['include_field_list'], $this->settings['mandatory_fields'] );
+		$filter_list = $this->exclude_filter( $include_list, $this->settings['exclude_field_list'], $this->settings['mandatory_fields'] );
 
 		$this->trace( 'headings', $headings );
 		$this->trace( 'values', $values );
@@ -253,9 +305,9 @@ class CPK_WPCSV_Posts_Model {
 		return $flat;
 	}
 
-	public function get_posts( Array $fields, $post_type = NULL, $post_status = NULL, $post_ids = Array( ) ) {
+	public function get_posts( Array $fields, $post_ids = Array( ) ) {
 		$field_list = '`' . implode( '`,`', $fields ) . '`';
-		$sql = $this->build_query( $field_list, $post_type, $post_status, $post_ids );
+		$sql = $this->build_query( $field_list, $post_ids );
 		$results = $this->db->get_results( $sql, ARRAY_A );
 		return (Array)$results;
 	}
