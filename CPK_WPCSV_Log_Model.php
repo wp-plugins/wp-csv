@@ -73,6 +73,7 @@ class CPK_WPCSV_Log_Model {
 					$db_port = 3306;
 				}
 				$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, (int)$db_port );
+				mysqli_set_charset( $link, 'utf8mb4' );
 				foreach( $this->messages as $message ) {
 					extract( $message );
 					$msg = mysqli_real_escape_string( $link, $msg );

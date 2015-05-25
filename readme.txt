@@ -3,8 +3,8 @@ Contributors: cpkwebsolutions
 Donate link: http://cpkwebsolutions.com/donate
 Tags: wp, csv, import, export, excel, taxonomy, tag, category, bulk, easy, all, importer, exporter, posts, pages, tags, custom, images
 Requires at least: 3.5
-Tested up to: 4.1.1
-Stable tag: 1.7.5
+Tested up to: 4.2.2
+Stable tag: 1.7.6
 
 A powerful, yet simple, CSV importer and exporter for Wordpress posts, pages, and custom post types. 
 
@@ -42,6 +42,8 @@ Refer to the <a href='http://cpkwebsolutions.com/wp-csv/quick-start-guide'>Quick
 No screenshots available.
 
 == Changelog ==
+= 1.7.6 =
+* Post type filtering bug fixed.
 = 1.7.5 =
 * Fixed mark_done bug.
 * Added option to export/import attachment post types
@@ -166,6 +168,12 @@ No screenshots available.
 
 == Upgrade Notice ==
 
-= 1.7.4 =
-* Fixed bug causing hidden fields to always export.
-* Errors generated during AJAX calls will now be displayed
+= 1.7.6 =
+* Post type filtering bug fixed.
+= 1.7.5 =
+* Fixed mark_done bug.
+* Added option to export/import attachment post types
+* Added check to make sure the uploaded file is smaller than post_max and upload_max PHP ini settings
+* Added modified_date and post_mime_type to exported field list
+* Fixed a small bug with future posts incorrectly being marked as 'Missed Schedule'
+* Improved AJAX error reporting
