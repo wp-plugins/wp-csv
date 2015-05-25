@@ -7,6 +7,7 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 		private $export_model;
 		private $row_index = 0;
 		private $debugger = NULL;
+		public $settings = Array( );
 
 		const EXPORT_FILE_NAME = 'wpcsv-export';
 
@@ -36,7 +37,11 @@ if ( !class_exists( 'CPK_WPCSV_Engine' ) ) {
 			}
 		}
 
-		public function prepare( ) {
+		public function prepare( $settings ) {
+			$this->settings = $settings;
+			$this->posts_model->update_settings( $this->settings );
+			$this->export_model->update_settings( $this->settings );
+
 			$this->export_model->empty_table( );
 			$export_file = $this->settings['csv_path'] . '/' . self::EXPORT_FILE_NAME . '.csv';
 			if ( file_exists( $export_file ) ) unlink( $export_file );
