@@ -15,6 +15,10 @@ class CPK_WPCSV_Posts_Model {
 		
 	}
 
+	public function update_settings( $settings ) {
+		$this->settings = $settings;
+	}
+
 	public function set_debugger( $debugger ) {
 		if ( is_object( $debugger ) ) {
 			$this->debugger = $debugger;

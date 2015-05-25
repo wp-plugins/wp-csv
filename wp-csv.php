@@ -388,7 +388,7 @@ if ( !class_exists( 'CPK_WPCSV' ) ) {
 		}
 
 		public function prepare_export( ) {
-			$this->wpcsv->prepare( );
+			$this->wpcsv->prepare( $this->settings );
 		}
 		
 		public function process_export( ) {

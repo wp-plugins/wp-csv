@@ -19,6 +19,10 @@ class CPK_WPCSV_Export_Queue_Model {
 		}
 	}
 
+	public function update_settings( $settings ) {
+		$this->settings = $settings;
+	}
+
 	private function table_exists( $name ) {
 		$sql = "SHOW TABLES LIKE '{$this->table_name}'";
 		return (boolean)$this->db->get_results( $sql );
