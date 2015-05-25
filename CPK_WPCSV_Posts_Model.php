@@ -46,7 +46,7 @@ class CPK_WPCSV_Posts_Model {
 		$excluded_post_types_filter = "AND post_type NOT IN ( 'revision', 'nav_menu_item', 'wp-types-group' )";
 
 		$post_id_filter = ( isset( $post_id_list ) ) ? "AND ID IN ( " . implode( ',', $post_id_list ) . " )" : '';
-		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE 1 = 1 {$post_status_filter} {$post_type_filter} {$excluded_post_types_filter} {$post_id_filter} ORDER BY post_modified DESC";
+		$sql = "SELECT DISTINCT {$fields} FROM {$this->db->posts} WHERE 1 = 1 {$post_status_filter} {$post_types_filter} {$excluded_post_types_filter} {$post_id_filter} ORDER BY post_modified DESC";
 
 		$this->trace( 'Post Query', $sql );
 
@@ -103,6 +103,7 @@ class CPK_WPCSV_Posts_Model {
 				$db_port = 3306;
 			}
 			$link = mysqli_connect( $db_host, DB_USER, DB_PASSWORD, DB_NAME, (int)$db_port );
+			mysqli_set_charset( $link, 'utf8mb4' );
 			$results = mysqli_query( $link, $sql );
 			if ( $results ) {
 				while ( $result = mysqli_fetch_array( $results, MYSQLI_ASSOC ) ) {
